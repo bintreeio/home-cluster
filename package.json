@@ -1,0 +1,12 @@
+{
+    "name": "home-cluster",
+    "main": "index.ts",
+    "devDependencies": {
+        "@types/node": "^18",
+        "typescript": "^5.0.0"
+    },
+    "dependencies": {
+        "@pulumi/bitwarden": "file:sdks/bitwarden",
+        "@pulumi/pulumi": "^3.113.0"
+    }
+}
