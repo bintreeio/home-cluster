@@ -1,0 +1,16 @@
+name: home-cluster
+description: Typescript pulumi for homelab
+runtime:
+  name: nodejs
+  options:
+    packagemanager: npm
+config:
+  pulumi:tags:
+    value:
+      pulumi:template: typescript
+packages:
+  bitwarden:
+    source: pulumi/pulumi/terraform-provider
+    version: 1.3.0
+    parameters:
+      - maxlaverse/bitwarden
