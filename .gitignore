@@ -1,0 +1,52 @@
+# Secrets / environment
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+
+# Pulumi
+# Never commit state or plaintext config secrets
+.pulumi/
+Pulumi.*.yaml.bak
+*.checkpoint.json
+pulumi-plan.json
+
+# Kubernetes
+kubeconfig
+kubeconfig.*
+*.kubeconfig
+charts/*.tgz
+
+# Talos / cluster bootstrap secrets (common in homelab clusters)
+talosconfig
+secrets.yaml
+age.key
+*.agekey
+
+# Node / TypeScript
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm/
+
+# IDE / editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs / temp
+*.log
+tmp/
+.cache/
