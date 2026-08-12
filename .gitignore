@@ -19,14 +19,15 @@ kubeconfig.*
 *.kubeconfig
 charts/*.tgz
 
-# Talos / cluster bootstrap secrets (common in homelab clusters)
+# Talos / cluster bootstrap secrets
 talosconfig
 secrets.yaml
 age.key
 *.agekey
 
 # Node / TypeScript
-node_modules/
+/bin/
+/node_modules/
 dist/
 build/
 *.tsbuildinfo
