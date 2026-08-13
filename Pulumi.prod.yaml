@@ -1,1 +1,4 @@
 encryptionsalt: v1:2PT+ojgeT/Q=:v1:fN2Z771OiHPgztzu:JkxguxPQQ7oKQctO0HXthFyDhy23hg==
+config:
+  home-cluster:pve01:
+    secure: v1:DZgJAsZYSSR8Av7K:ZPPo8A5x1eTbeN09cBHOKpDr6g380TKabFCzuStmdQPPSXtz/Gox8g==
