@@ -11,6 +11,3 @@ export default async function getSecret(id: string): Promise<string> {
 
     return secret.value;
 }
-
-
-getSecret("4826f8d7-3f2e-4516-80fe-b49f007548df").then(console.log);
