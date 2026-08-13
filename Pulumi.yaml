@@ -9,8 +9,8 @@ config:
     value:
       pulumi:template: typescript
 packages:
-  bitwarden:
-    source: pulumi/pulumi/terraform-provider
+  proxmox:
+    source: terraform-provider
     version: 1.3.0
     parameters:
-      - maxlaverse/bitwarden
+      - bpg/proxmox

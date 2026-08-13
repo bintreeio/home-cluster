@@ -6,7 +6,13 @@
         "typescript": "^5.0.0"
     },
     "dependencies": {
+        "@bitwarden/sdk-napi": "^1.0.0",
+        "@muhlba91/pulumi-proxmoxve": "^8.3.0",
         "@pulumi/bitwarden": "file:sdks/bitwarden",
+        "@pulumi/proxmox": "file:sdks/proxmox",
         "@pulumi/pulumi": "^3.113.0"
+    },
+    "allowScripts": {
+        "file:sdks/proxmox": true
     }
 }
