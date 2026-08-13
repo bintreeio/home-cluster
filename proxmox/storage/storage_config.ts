@@ -6,7 +6,7 @@ export const localStorage = new proxmox.StorageDirectory('local', {
     contents: ['iso', 'vztmpl', 'backup', 'snippets', 'import'],
     shared: false,
 }, {
-
+    protect: true,
     retainOnDelete: true,
     provider: provider,
     import: 'local' //resource already exists called local on proxmox
