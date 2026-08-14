@@ -1,6 +1,6 @@
 import * as proxmox from '@pulumi/proxmox';
 import { Config } from '@pulumi/pulumi';
-import getSecret from "../utils/bitwarden_auth";
+import getSecret from "../utils/bitwardenAuth";
 const config = new Config();
 export const provider = new proxmox.Provider('proxmox', {
     endpoint: config.requireSecret('pve01'),
