@@ -1,6 +1,6 @@
 import * as proxmox from "@pulumi/proxmox";
 import { provider } from "../../provider";
-import { localStorage } from "../storage_config";
+import { localStorage } from "../storageConfig";
 
 
 
