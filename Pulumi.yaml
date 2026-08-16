@@ -14,3 +14,8 @@ packages:
     version: 1.3.0
     parameters:
       - bpg/proxmox
+  ct:
+    source: terraform-provider
+    version: 1.3.0
+    parameters:
+      - poseidon/ct
