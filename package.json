@@ -2,6 +2,7 @@
     "name": "home-cluster",
     "main": "index.ts",
     "devDependencies": {
+        "@types/js-yaml": "^4.0.9",
         "@types/node": "^18",
         "typescript": "^5.0.0"
     },
@@ -9,6 +10,7 @@
         "@bitwarden/sdk-napi": "^1.0.0",
         "@muhlba91/pulumi-proxmoxve": "^8.3.0",
         "@pulumi/bitwarden": "file:sdks/bitwarden",
+        "@pulumi/ct": "file:sdks/ct",
         "@pulumi/proxmox": "file:sdks/proxmox",
         "@pulumi/pulumi": "^3.113.0"
     },

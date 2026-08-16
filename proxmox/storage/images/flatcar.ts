@@ -2,11 +2,8 @@ import * as proxmox from "@pulumi/proxmox";
 import { provider } from "../../provider";
 import { localStorage } from "../storageConfig";
 
-
-
-
 export function flatCarIso(serverName: string) {
-    new proxmox.DownloadFile(`flatcar-iso-${serverName}`, {
+    return new proxmox.DownloadFile(`flatcar-iso-${serverName}`, {
         contentType: 'import',
         datastoreId: 'local',
         nodeName: serverName,
