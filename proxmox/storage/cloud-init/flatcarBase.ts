@@ -1,4 +1,4 @@
-import { Config} from "@pulumi/pulumi";
+import { Config } from "@pulumi/pulumi";
 import * as ct from "@pulumi/ct";
 import * as proxmox from "@pulumi/proxmox";
 import * as yaml from "js-yaml"
@@ -52,21 +52,29 @@ function convertButaneToIginition(butaneConfig: string) {
     return ignitionFile
 }
 
-export const ignitionFile = convertButaneToIginition(butaneYaml);
+const ignitionFile = convertButaneToIginition(butaneYaml);
 
-// Upload the rendered ignition JSON to the node as a snippet so VMs can
-// reference it by file ID (requires the datastore to allow "Snippets" content)
-export const ignitionSnippet = new proxmox.VirtualEnvironmentFile("flatcarBaseIgnition", {
-    nodeName: "pve01",
-    datastoreId: "local",
-    contentType: "snippets",
-    sourceRaw: {
-        data: ignitionFile.rendered,
-        fileName: "flatcar-base.ign",
-    },
-}, {
-    //protect: true,
-    //retainOnDelete: true,
-    provider: provider,}
-);
+
+const cache = new Map<string, proxmox.VirtualEnvironmentFile>();
+
+export function ignitionSnippetBase(nodeName: string): proxmox.VirtualEnvironmentFile {
+    let snippet = cache.get(nodeName);
+    if (!snippet) {
+        snippet = new proxmox.VirtualEnvironmentFile(`flatcarBaseIgnition-${nodeName}`, {
+            nodeName: nodeName,
+            datastoreId: "local",
+            contentType: "snippets",
+            sourceRaw: {
+                data: ignitionFile.rendered,
+                fileName: "flatcar-base.ign",
+            },
+        }, {
+            //protect: true,
+            //retainOnDelete: true,
+            provider: provider,
+        });
+        cache.set(nodeName, snippet);
+    }
+    return snippet;
+}
 

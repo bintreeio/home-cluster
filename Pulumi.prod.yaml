@@ -6,5 +6,5 @@ config:
     - name: pve01
       ip: 172.16.0.25
     - name: pve02
-      ip: 10.16.0.26
+      ip: 172.16.0.26
   home-cluster:flatcar_ssh_key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHtoZmEkD27Z7kPF7t9dwS510l2G8dzrX5bMW2CBmMCe josh@bintree.io
