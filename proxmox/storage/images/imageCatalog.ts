@@ -17,6 +17,10 @@ const imageCatalog = {
         url: "https://pxe.factory.talos.dev/image/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba/v1.13.8/metal-amd64.iso",
         fileName: 'talos-v1.13.8-metal-amd64.iso',
     },
+    debian: {
+        url: "https://cloud.debian.org/images/cloud/trixie/latest/debian-13-nocloud-amd64.qcow2",
+        fileName: "debian-13.6.0.qcow2"
+    }
 
 
 
