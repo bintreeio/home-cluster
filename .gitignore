@@ -53,5 +53,7 @@ tmp/
 .cache/
 /sdks/
 
-.claude/
-.bitwarden/
+
+
+/.claude/
+/.bitwarden/
