@@ -15,12 +15,14 @@ const imageCatalog = {
     },
     talos: {
         url: "https://pxe.factory.talos.dev/image/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba/v1.13.8/metal-amd64.iso",
-        fileName: 'flatcar_production_qemu_image_1_13_8.qcow2',
+        fileName: 'talos-v1.13.8-metal-amd64.iso',
     },
+
+
 
 } satisfies Record<string, ImageDef>;
 
-export type ImageName = keyof typeof imageCatalog;   // "flatcar" | "talos"
+export type ImageName = keyof typeof imageCatalog;   // "flatcar" | "talos | debian"
 
 const cache = new Map<string, proxmox.DownloadFile>();
 
