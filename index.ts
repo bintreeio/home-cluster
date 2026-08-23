@@ -19,3 +19,9 @@ const test1 = deployNixOsVm("web01", "pve02", {
     gateway: "172.16.32.1",
     vlanId: 10,
 });
+
+const network01 = deployNixOsVm("network01", "pve01", {
+    ipAddress: "172.16.32.12/24",
+    gateway: "172.16.32.1",
+    vlanId: 10,
+});
