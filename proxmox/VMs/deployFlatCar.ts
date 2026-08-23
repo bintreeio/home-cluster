@@ -22,7 +22,7 @@ interface VmArgs {
 
 export function deployFlatCarVM(hostName: string, pxeHostName: string, args: VmArgs = {}) : proxmox.VirtualEnvironmentVm {
     const node = pveNode(pxeHostName);
-    return new proxmox.VirtualEnvironmentVm(hostName, {
+    const vm = new proxmox.VirtualEnvironmentVm(hostName, {
             name: args.vmName ?? hostName,
             stopOnDestroy: true,
             nodeName: node.name, //pve01, pve02, pve03
@@ -56,7 +56,7 @@ export function deployFlatCarVM(hostName: string, pxeHostName: string, args: VmA
         }, {
             protect: args.protect ?? false,
             retainOnDelete: args.retainOnDelete ?? false,
-            provider: provider,}
-    );
+            provider: provider,});
 
+    return vm;
 }

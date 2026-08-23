@@ -18,8 +18,8 @@ const imageCatalog = {
         fileName: 'talos-v1.13.8-metal-amd64.iso',
     },
     debian: {
-        url: "https://cloud.debian.org/images/cloud/trixie/latest/debian-13-nocloud-amd64.qcow2",
-        fileName: "debian-13.6.0.qcow2"
+        url: "https://cloud.debian.org/images/cloud/bookworm/20260821-2577/debian-12-genericcloud-amd64-20260821-2577.qcow2",
+        fileName: "debian-12-genericcloud-20260821.qcow2"
     }
 
 
@@ -42,7 +42,7 @@ export function osImage(image: ImageName, nodeName: string): proxmox.DownloadFil
             url: def.url,
             fileName: def.fileName,
             overwrite: false,
-        }, { provider, dependsOn: [localStorage], protect: true });
+        }, { provider, dependsOn: [localStorage], protect: false });
         cache.set(key, img);
     }
     return img;
