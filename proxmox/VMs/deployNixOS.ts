@@ -4,7 +4,7 @@ import * as proxmox from "@pulumi/proxmox";
 import {provider} from "../provider";
 import {pveNode} from "../../utils/checkpvehosts";
 import * as command from "@pulumi/command";
-
+import getSecret from "../../utils/bitwardenAuth";
 interface VmArgs {
     image?: ImageName;      // defaults to flatcar
     cores?: number;
@@ -84,21 +84,28 @@ export function deployNixOsVm(hostName: string, pxeHostName: string, args: VmArg
 
     const bareIp = args.ipAddress.split("/")[0];
 
-    // Private key path matching the flatcar_ssh_key public key — ssh/nixos-anywhere -i need the private key
-    const sshPrivateKey = cfg.require("nixos_ssh_private_key");
+    // getSecret returns the private key *contents* (matching the flatcar_ssh_key public
+    // key), so it can't be passed to -i directly — write it to a temp file at run time.
+    const sshPrivateKey = pulumi.secret(getSecret("dff758be-6208-485f-89eb-b4a80052f57c"));
 
     const install = new command.local.Command(`${hostName}-nixos-anywhere`, {
         dir: "nix",
         triggers: ["static-ip-v4"],
+        environment: { NIXOS_ANYWHERE_SSH_KEY: sshPrivateKey },
         create: pulumi.interpolate`
+    set -eu
+    keyfile=$(mktemp)
+    trap 'rm -f "$keyfile"' EXIT
+    printf '%s\\n' "$NIXOS_ANYWHERE_SSH_KEY" > "$keyfile"
+    chmod 600 "$keyfile"
     until ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 \
-      -i ${sshPrivateKey} root@${bareIp} true; do
+      -i "$keyfile" root@${bareIp} true; do
       sleep 5
     done
     nix --extra-experimental-features 'nix-command flakes' run github:nix-community/nixos-anywhere -- \
       --flake .#${args.vmName ?? hostName} \
       --build-on remote \
-      -i ${sshPrivateKey} \
+      -i "$keyfile" \
       root@${bareIp}
   `,
     }, { dependsOn: [vm], customTimeouts: { create: "30m" } });
