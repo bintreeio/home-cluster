@@ -1,9 +1,9 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
     disko = {
       url = "github:nix-community/disko";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-stable";
     };
   };
 
@@ -21,7 +21,6 @@
     in {
       nixosConfigurations = {
         web01 = mkVm ./hosts/web01.nix;
-        # db01 = mkVm ./hosts/db01.nix;
       };
     };
 }
