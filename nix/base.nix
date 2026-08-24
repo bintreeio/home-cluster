@@ -1,7 +1,6 @@
 { config, pkgs, lib, ... }:
 {
   services.qemuGuest.enable = true;
-  networking.networkmanager.enable = true;
   time.timeZone = "America/Los_Angeles";
   i18n.defaultLocale = "en_US.UTF-8";
   services.openssh.enable = true;
