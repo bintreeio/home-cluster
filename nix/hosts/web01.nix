@@ -15,7 +15,7 @@
   systemd.network.enable = true;
   systemd.network.networks."10-lan" = {
     matchConfig.Name = "en* eth*";
-    address = [ "172.16.32.11/24" ];
+    address = [ "172.16.32.15/24" ];
     routes = [ { Gateway = "172.16.32.1"; } ];
     dns = [ "1.1.1.1" ];
   };

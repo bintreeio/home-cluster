@@ -57,7 +57,7 @@
 
       colmena = {
         meta.nixpkgs = import nixpkgs { inherit system; };
-
+        web01 = mkColmenaHost ./hosts/web01.nix "172.16.32.15";
         network01 = mkColmenaHost ./hosts/network01.nix "172.16.32.11";
         network02 = mkColmenaHost ./hosts/network02.nix "172.16.32.12";
       };
