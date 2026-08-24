@@ -53,6 +53,7 @@ in
 
         environment = {
           DNS_SERVER_DOMAIN = cfg.domain;
+
         };
 
         autoStart = true;
