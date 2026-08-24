@@ -20,8 +20,8 @@
       };
     in {
       nixosConfigurations = {
-        web01 = mkVm ./hosts/web01.nix;
         network01 = mkVm ./hosts/network01.nix;
+        network02 = mkVm ./hosts/network02.nix;
       };
     };
 }
