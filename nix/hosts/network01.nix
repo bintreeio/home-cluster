@@ -36,6 +36,6 @@
     enable = true;
     wildcardDomain = "home.bintree.io";
     virtualHosts."dns01.home.bintree.io" = "127.0.0.1:5380";
-    virtualHosts."pve01.home.bintree.io" = "https://172.16.32.25/:8006";
+    virtualHosts."pve01.home.bintree.io" = "https://172.16.0.25/:8006";
   };
 }
