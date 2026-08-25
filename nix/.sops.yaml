@@ -1,0 +1,8 @@
+keys:
+  - &admin     age1u0m62l4skjd2mjqxar99cd0qex6jxq4uf62rnj48ufgu8zsgya8qkth859 # Mac, ~/Library/Application Support/sops/age/keys.txt — backed up in Bitwarden as "nixos_sops_key"
+  - &network01 age1u8zfhkdmhel0k46fud94z5tsfyed5gy6equnl78xajppmfnes4uq56902s # ssh-to-age of network01's SSH host key
+  - &network02 age1cc9z87zark3sffs6f67mfmk3vpqp93luegduuyzr3f3fm2tn7eesujtk8y # ssh-to-age of network02's SSH host key
+creation_rules:
+  - path_regex: secrets/.*
+    key_groups:
+      - age: [*admin, *network01, *network02]

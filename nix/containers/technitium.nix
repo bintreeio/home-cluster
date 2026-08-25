@@ -31,6 +31,13 @@ in
       description = "Host directory bind-mounted to /etc/dns. Back this up.";
     };
 
+    webListenAddress = lib.mkOption {
+      type = lib.types.str;
+      default = "0.0.0.0";
+      example = "127.0.0.1";
+      description = "Comma-separated DNS_SERVER_WEB_SERVICE_LOCAL_ADDRESSES. Set 127.0.0.1 when a reverse proxy fronts the UI.";
+    };
+
     openAdminUI = lib.mkOption {
       type = lib.types.bool;
       default = true;
@@ -53,7 +60,9 @@ in
 
         environment = {
           DNS_SERVER_DOMAIN = cfg.domain;
-
+          # Applied on first init; an existing install keeps its saved config —
+          # flip Settings -> Web Service -> Local Addresses once if needed.
+          DNS_SERVER_WEB_SERVICE_LOCAL_ADDRESSES = cfg.webListenAddress;
         };
 
         autoStart = true;

@@ -18,6 +18,10 @@ interface VmArgs {
     userDataFileId?: pulumi.Input<string>;
     protect?: boolean;
     retainOnDelete?: boolean;
+    // Bitwarden secret id holding this host's /etc/ssh/ssh_host_ed25519_key.
+    // Injected via nixos-anywhere --extra-files so the machine keeps the same
+    // identity across reinstalls — sops-nix secrets decrypt on first boot.
+    hostKeySecretId?: string;
 }
 
 interface NixOsVmDeployment {
@@ -88,16 +92,33 @@ export function deployNixOsVm(hostName: string, pxeHostName: string, args: VmArg
     // key), so it can't be passed to -i directly — write it to a temp file at run time.
     const sshPrivateKey = pulumi.secret(getSecret("dff758be-6208-485f-89eb-b4a80052f57c"));
 
+    // Stable machine identity: the SSH host key doubles as the sops-nix age
+    // identity (ssh-to-age, pinned in nix/.sops.yaml), so it must survive
+    // reinstalls. Empty when no hostKeySecretId is configured.
+    const sshHostKey = args.hostKeySecretId
+        ? pulumi.secret(getSecret(args.hostKeySecretId))
+        : pulumi.output("");
+
     const install = new command.local.Command(`${hostName}-nixos-anywhere`, {
         dir: "nix",
         triggers: ["static-ip-v4"],
-        environment: { NIXOS_ANYWHERE_SSH_KEY: sshPrivateKey },
+        environment: { NIXOS_ANYWHERE_SSH_KEY: sshPrivateKey, NIXOS_HOST_KEY: sshHostKey },
         create: pulumi.interpolate`
     set -eu
     keyfile=$(mktemp)
-    trap 'rm -f "$keyfile"' EXIT
+    extradir=$(mktemp -d)
+    trap 'rm -f "$keyfile"; rm -rf "$extradir"' EXIT
     printf '%s\\n' "$NIXOS_ANYWHERE_SSH_KEY" > "$keyfile"
     chmod 600 "$keyfile"
+    extra_files_flag=""
+    if [ -n "$NIXOS_HOST_KEY" ]; then
+      mkdir -p "$extradir/etc/ssh"
+      printf '%s\\n' "$NIXOS_HOST_KEY" > "$extradir/etc/ssh/ssh_host_ed25519_key"
+      chmod 600 "$extradir/etc/ssh/ssh_host_ed25519_key"
+      ssh-keygen -y -f "$extradir/etc/ssh/ssh_host_ed25519_key" \
+        > "$extradir/etc/ssh/ssh_host_ed25519_key.pub"
+      extra_files_flag="--extra-files $extradir"
+    fi
     until ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 \
       -i "$keyfile" root@${bareIp} true; do
       sleep 5
@@ -106,6 +127,7 @@ export function deployNixOsVm(hostName: string, pxeHostName: string, args: VmArg
       --flake .#${args.vmName ?? hostName} \
       --build-on remote \
       -i "$keyfile" \
+      $extra_files_flag \
       root@${bareIp}
   `,
     }, { dependsOn: [vm], customTimeouts: { create: "30m" } });
