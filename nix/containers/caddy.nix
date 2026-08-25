@@ -3,11 +3,41 @@
 let
   cfg = config.services.caddy-container;
 
+  # HTTPS upstreams are internal devices reached by IP; their certs never
+  # match, so encrypt without verifying.
+  proxyDirective = upstream:
+    if lib.hasPrefix "https://" upstream then ''
+      reverse_proxy ${upstream} {
+          transport http {
+            tls_insecure_skip_verify
+          }
+        }''
+    else "reverse_proxy ${upstream}";
+
   vhostBlocks = lib.mapAttrsToList (host: upstream: ''
     ${host} {
-      reverse_proxy ${upstream}
+      ${proxyDirective upstream}
     }
   '') cfg.virtualHosts;
+
+  matcherName = host: lib.replaceStrings [ "." ] [ "-" ] host;
+
+  wildcardHandlers = lib.mapAttrsToList (host: upstream: ''
+      @${matcherName host} host ${host}
+      handle @${matcherName host} {
+        ${proxyDirective upstream}
+      }
+  '') cfg.virtualHosts;
+
+  # One site block, one wildcard cert: adding a vhost needs no new issuance.
+  wildcardBlock = ''
+    *.${cfg.wildcardDomain} {
+    ${lib.concatStringsSep "\n" wildcardHandlers}
+      handle {
+        abort
+      }
+    }
+  '';
 
   caddyfile = pkgs.writeText "Caddyfile" ''
     {
@@ -18,7 +48,9 @@ let
       }
     }
 
-    ${lib.concatStringsSep "\n" vhostBlocks}
+    ${if cfg.wildcardDomain != null
+      then wildcardBlock
+      else lib.concatStringsSep "\n" vhostBlocks}
     ${cfg.extraCaddyfile}
   '';
 in
@@ -44,11 +76,28 @@ in
       description = "Contact email for ACME (Let's Encrypt) registration.";
     };
 
+    wildcardDomain = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      example = "home.bintree.io";
+      description = ''
+        When set, serve all virtualHosts from a single `*.<domain>` site block
+        with one wildcard certificate (DNS-01), instead of one site block and
+        certificate per hostname. Unmatched names are aborted.
+      '';
+    };
+
     virtualHosts = lib.mkOption {
       type = lib.types.attrsOf lib.types.str;
       default = { };
-      example = { "dns01.home.bintree.io" = "127.0.0.1:5380"; };
-      description = "Hostname -> reverse_proxy upstream. One HTTPS site block each.";
+      example = {
+        "dns01.home.bintree.io" = "127.0.0.1:5380";
+        "nas.home.bintree.io" = "https://172.16.32.5";
+      };
+      description = ''
+        Hostname -> reverse_proxy upstream. `https://` upstreams are proxied
+        over TLS without verification (internal devices reached by IP).
+      '';
     };
 
     extraCaddyfile = lib.mkOption {
@@ -81,8 +130,6 @@ in
       containers.caddy = {
         image = "docker.io/serfriz/caddy-porkbun:${cfg.version}@${cfg.imageDigest}";
 
-        # Host networking so upstreams on 127.0.0.1 (e.g. Technitium's admin
-        # UI) are reachable without publishing them beyond loopback.
         extraOptions = [ "--network=host" ];
 
         volumes = [
