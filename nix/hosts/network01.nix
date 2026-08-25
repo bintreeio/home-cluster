@@ -22,7 +22,7 @@
     enable = true;
     domain = "dns01.home.bintree.io";
     webListenAddress = "127.0.0.1"; # admin UI only via Caddy
-    openAdminUI = true;
+    openAdminUI = false;
     zone = "home.bintree.io";
     records = {
       "dns01.home.bintree.io" = "172.16.32.11";
@@ -36,6 +36,6 @@
     enable = true;
     wildcardDomain = "home.bintree.io";
     virtualHosts."dns01.home.bintree.io" = "127.0.0.1:5380";
-    virtualHosts."nas.home.bintree.io" = "https://172.16.32.5";
+    virtualHosts."pve01.home.bintree.io" = "https://172.16.32.25/:8006";
   };
 }
