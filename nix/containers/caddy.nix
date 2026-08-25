@@ -114,6 +114,14 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    assertions = [{
+      # A path in an upstream (e.g. "https://ip/:port") is rejected by Caddy at
+      # startup, crash-looping the container and taking down every vhost.
+      assertion = lib.all (u: builtins.match "([a-z]+://)?[^/]+" u != null)
+        (lib.attrValues cfg.virtualHosts);
+      message = "caddy-container: upstreams must be [scheme://]host[:port] with no path, e.g. \"https://172.16.0.25:8006\"";
+    }];
+
     # Porkbun API creds (PORKBUN_API_KEY / PORKBUN_API_SECRET_KEY).
     # Edit with `sops secrets/caddy.env` from nix/.
     sops.secrets."caddy-env" = {
