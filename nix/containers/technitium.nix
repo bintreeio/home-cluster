@@ -54,8 +54,8 @@ in
     records = lib.mkOption {
       type = lib.types.attrsOf lib.types.str;
       default = { };
-      example = { "dns01.home.bintree.io" = "172.16.32.11"; };
-      description = "A records (FQDN -> IPv4) ensured in `zone` on every activation.";
+      example = { "dns01.home.bintree.io" = "172.16.32.11"; "*.home.bintree.io" = "172.16.32.11"; };
+      description = "A records (FQDN -> IPv4, wildcards allowed) ensured in `zone` on every activation.";
     };
   };
 
@@ -76,7 +76,9 @@ in
         # Host networking, NOT ports = [...]:
         extraOptions = [ "--network=host" ];
 
-        volumes = [ "${cfg.dataDir}:/etc/dns" ];
+        volumes = [ "${cfg.dataDir}:/etc/dns"
+                    "/var/lib/technitium/logs:/var/log/technitium/dns:Z"
+                    ];
 
         environment = {
           DNS_SERVER_DOMAIN = cfg.domain;
