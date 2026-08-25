@@ -23,6 +23,11 @@
     domain = "dns02.home.bintree.io";
     webListenAddress = "127.0.0.1"; # admin UI only via Caddy
     openAdminUI = false; # and the firewall stays closed on 5380
+    zone = "home.bintree.io";
+    records = {
+      "dns01.home.bintree.io" = "172.16.32.11";
+      "dns02.home.bintree.io" = "172.16.32.12";
+    };
   };
 
   services.caddy-container = {

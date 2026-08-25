@@ -9,8 +9,6 @@ let
     }
   '') cfg.virtualHosts;
 
-  # A store path: any change here yields a new container definition, so the
-  # service restarts with the new config on activation — no manual reloads.
   caddyfile = pkgs.writeText "Caddyfile" ''
     {
       email {env.acmeEmail}
