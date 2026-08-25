@@ -23,6 +23,8 @@
 
       commonModules = [
         disko.nixosModules.disko
+        sops-nix.nixosModules.sops
+        ./modules/sops.nix
         ./standard-vm.nix
         ./base.nix
       ];

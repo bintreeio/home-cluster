@@ -1,6 +1,9 @@
 { config, pkgs, lib, ... }:
 {
-  imports = [ ../containers/technitium.nix ];
+  imports = [
+    ../containers/technitium.nix
+    ../containers/caddy.nix
+  ];
 
   networking.hostName = "network02";
   networking.domain = "home.bintree.io";
@@ -18,6 +21,13 @@
   services.technitium-container = {
     enable = true;
     domain = "dns02.home.bintree.io";
-    openAdminUI = true;
+    webListenAddress = "127.0.0.1"; # admin UI only via Caddy
+    openAdminUI = false; # and the firewall stays closed on 5380
+  };
+
+  services.caddy-container = {
+    enable = true;
+    acmeEmail = "psycholomo@gmail.com";
+    virtualHosts."dns02.home.bintree.io" = "127.0.0.1:5380";
   };
 }
