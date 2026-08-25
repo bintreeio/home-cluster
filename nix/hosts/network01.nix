@@ -27,7 +27,6 @@
 
   services.caddy-container = {
     enable = true;
-    acmeEmail = "psycholomo@gmail.com";
     virtualHosts."dns01.home.bintree.io" = "127.0.0.1:5380";
   };
 }

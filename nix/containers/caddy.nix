@@ -13,7 +13,7 @@ let
   # service restarts with the new config on activation — no manual reloads.
   caddyfile = pkgs.writeText "Caddyfile" ''
     {
-      email ${cfg.acmeEmail}
+      email {env.acmeEmail}
       acme_dns porkbun {
         api_key {env.PORKBUN_API_KEY}
         api_secret_key {env.PORKBUN_API_SECRET_KEY}
