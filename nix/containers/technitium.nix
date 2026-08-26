@@ -76,8 +76,10 @@ in
         # Host networking, NOT ports = [...]:
         extraOptions = [ "--network=host" ];
 
+        # The logs mount shadows <dataDir>/logs so log files land outside the
+        # backed-up data dir (back up dataDir, skip /var/log/technitium).
         volumes = [ "${cfg.dataDir}:/etc/dns"
-                    "/var/lib/technitium/logs:/var/log/technitium/dns:Z"
+                    "/var/log/technitium:/etc/dns/logs"
                     ];
 
         environment = {
@@ -163,6 +165,7 @@ in
 
     systemd.tmpfiles.rules = [
       "d ${cfg.dataDir} 0750 root root -"
+      "d /var/log/technitium 0750 root root -"
     ];
 
     # Nothing else may sit on port 53 (resolved's stub listener would

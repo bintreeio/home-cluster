@@ -4,10 +4,13 @@ let
   cfg = config.services.caddy-container;
 
   # HTTPS upstreams are internal devices reached by IP; their certs never
-  # match, so encrypt without verifying.
+  # match, so encrypt without verifying. Keep the browser's Host header so
+  # upstreams that build absolute redirects from it (TrueNAS: / -> /ui/)
+  # send the user back to the vhost name, not the upstream IP.
   proxyDirective = upstream:
     if lib.hasPrefix "https://" upstream then ''
       reverse_proxy ${upstream} {
+          header_up Host {http.request.host}
           transport http {
             tls_insecure_skip_verify
           }
