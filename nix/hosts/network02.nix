@@ -39,6 +39,5 @@
     virtualHosts."pve01.home.bintree.io" = "https://172.16.0.25:8006";
     virtualHosts."pve02.home.bintree.io" = "https://172.16.0.26:8006";
     virtualHosts."pve03.home.bintree.io" = "https://172.16.0.27:8006";
-    virtualHosts."nas.home.bintree.io" = "https://172.16.32.5";
   };
 }

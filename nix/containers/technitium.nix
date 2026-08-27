@@ -97,8 +97,7 @@ in
 
     # Converge Technitium to the declared state through its loopback API:
     # enforce the sops admin password (rotating a default-password install)
-    # and ensure the zone + A records exist. Idempotent; "already exists"
-    # answers are success.
+    # and ensure the zone.
     systemd.services.technitium-config = lib.mkIf (cfg.zone != null) {
       description = "Apply declarative Technitium DNS configuration";
       wantedBy = [ "multi-user.target" ];
@@ -113,7 +112,7 @@ in
         api="http://127.0.0.1:5380/api"
         pw=$(grep -m1 '^DNS_SERVER_ADMIN_PASSWORD=' ${config.sops.secrets."technitium-env".path} | cut -d= -f2-)
 
-        # Wait for the web service (fresh containers take a few seconds).
+        # Wait for the web service.
         for i in $(seq 1 60); do
           curl -s -o /dev/null "$api/user/login" && break
           sleep 2
