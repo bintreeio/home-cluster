@@ -35,7 +35,14 @@ in
       type = lib.types.str;
       default = "0.0.0.0";
       example = "127.0.0.1";
-      description = "Comma-separated DNS_SERVER_WEB_SERVICE_LOCAL_ADDRESSES. Set 127.0.0.1 when a reverse proxy fronts the UI.";
+      description = ''
+        Comma-separated addresses the admin UI/API listens on (port 5380).
+        Enforced on every activation via the API, so it applies to existing
+        installs too (the env var alone only counts on first init). Always
+        include 127.0.0.1: technitium-config talks to the API over loopback.
+        Include the host's LAN IP so the UI stays reachable when the reverse
+        proxy is down.
+      '';
     };
 
     openAdminUI = lib.mkOption {
@@ -96,8 +103,8 @@ in
     };
 
     # Converge Technitium to the declared state through its loopback API:
-    # enforce the sops admin password (rotating a default-password install)
-    # and ensure the zone.
+    # enforce the sops admin password (rotating a default-password install),
+    # ensure the zone/records, and pin the web-service listen addresses.
     systemd.services.technitium-config = lib.mkIf (cfg.zone != null) {
       description = "Apply declarative Technitium DNS configuration";
       wantedBy = [ "multi-user.target" ];
@@ -159,6 +166,21 @@ in
           ensure /zones/records/add "domain=${fqdn}" "zone=${cfg.zone}" "type=A" "ipAddress=${ip}" "ttl=300" "overwrite=true"
         '') cfg.records)}
         echo "technitium config applied: zone ${cfg.zone}, ${toString (builtins.length (builtins.attrNames cfg.records))} record(s)"
+
+        # Web-service listen addresses. Done last: applying a change restarts
+        # the web service, which drops this session's connection.
+        want='${cfg.webListenAddress}'
+        have=$(curl -sG "$api/settings/get" --data-urlencode "token=$token" \
+          | grep -o '"webServiceLocalAddresses":\[[^]]*\]' | grep -o '"[^"]*"' | grep -v webServiceLocalAddresses \
+          | tr -d '"' | paste -sd, -)
+        if [ "$have" != "$want" ]; then
+          out=$(curl -sG "$api/settings/set" --data-urlencode "token=$token" \
+            --data-urlencode "webServiceLocalAddresses=$want")
+          case $out in
+            *'"status":"ok"'*|"") echo "web service local addresses: $have -> $want" ;;
+            *) echo "ERROR: settings/set webServiceLocalAddresses -> $out" >&2; exit 1 ;;
+          esac
+        fi
       '';
     };
 

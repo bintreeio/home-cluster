@@ -21,8 +21,11 @@
   services.technitium-container = {
     enable = true;
     domain = "dns01.home.bintree.io";
-    webListenAddress = "127.0.0.1"; # admin UI only via Caddy
-    openAdminUI = false;
+    # UI on loopback (for Caddy + the config script) AND the LAN IP, so the
+    # admin console is reachable directly at http://172.16.32.11:5380 when the
+    # reverse proxy is down.
+    webListenAddress = "127.0.0.1,172.16.32.11";
+    openAdminUI = true;
     zone = "home.bintree.io";
     records = {
       "dns01.home.bintree.io" = "172.16.32.11";
