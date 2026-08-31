@@ -88,8 +88,7 @@ export function deployNixOsVm(hostName: string, pxeHostName: string, args: VmArg
 
     const bareIp = args.ipAddress.split("/")[0];
 
-    // getSecret returns the private key *contents* (matching the flatcar_ssh_key public
-    // key), so it can't be passed to -i directly — write it to a temp file at run time.
+    // getSecret returns the private key *contents*  so it can't be passed to -i directly — write it to a temp file at run time.
     const sshPrivateKey = pulumi.secret(getSecret("dff758be-6208-485f-89eb-b4a80052f57c"));
 
     // Stable machine identity: the SSH host key doubles as the sops-nix age
@@ -103,6 +102,9 @@ export function deployNixOsVm(hostName: string, pxeHostName: string, args: VmArg
         dir: "nix",
         triggers: ["static-ip-v4"],
         environment: { NIXOS_ANYWHERE_SSH_KEY: sshPrivateKey, NIXOS_HOST_KEY: sshHostKey },
+        // Without an explicit update script, pulumi-command re-runs `create` on
+        // ANY input change — i.e. it REINSTALLS the machine. Do not change this line or you will have a bad time
+        update: "true",
         create: pulumi.interpolate`
     set -eu
     keyfile=$(mktemp)
