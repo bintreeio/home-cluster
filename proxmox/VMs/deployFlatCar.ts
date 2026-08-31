@@ -18,6 +18,9 @@ interface VmArgs {
     userDataFileId?: pulumi.Input<string>;
     protect?: boolean;
     retainOnDelete?: boolean;
+    extraIgnoreChanges?: boolean[];
+    replicateDisk?: boolean;
+
 }
 
 export function deployFlatCarVM(hostName: string, pxeHostName: string, args: VmArgs = {}) : proxmox.VirtualEnvironmentVm {
@@ -32,7 +35,12 @@ export function deployFlatCarVM(hostName: string, pxeHostName: string, args: VmA
             },
             memory: { dedicated: args.memoryMb ?? 2048},
             disks: [
-                { interface: "virtio0", datastoreId: "local-lvm", size: args.osDiskSize ?? 16, importFrom: osImage('flatcar', pxeHostName).id},
+                { interface: "virtio0", datastoreId: "local-lvm", size: args.osDiskSize ?? 16,
+                  importFrom: osImage('flatcar', pxeHostName).id,
+                  replicate: args.replicateDisk ?? false
+                },
+
+
                 { interface: "virtio1", datastoreId: "local-lvm", size: args.dataDiskSize ?? 20, },
             ],
             initialization: {
@@ -56,7 +64,12 @@ export function deployFlatCarVM(hostName: string, pxeHostName: string, args: VmA
         }, {
             protect: args.protect ?? false,
             retainOnDelete: args.retainOnDelete ?? false,
-            provider: provider,});
+        /** If true (default), Proxmox HA/migration owns VM placement and
+         *  Pulumi won't try to move it back. Set false to have Pulumi
+         *  strictly enforce nodeName. */
+            ignoreChanges:  (args.extraIgnoreChanges ?? true) ? [pxeHostName] : [],
+            provider: provider,
+        });
 
     return vm;
 }

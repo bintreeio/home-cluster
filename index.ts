@@ -6,12 +6,12 @@ const network01 = deployNixOsVm("network01", "pve01", {
     ipAddress: "172.16.32.11/24",
     gateway: "172.16.32.1",
     vlanId: 10,
-    // hostKeySecretId: "<bitwarden id of note network01_ssh_host_key>",
+    hostKeySecretId: "f14f7d47-f5e6-429e-b27d-b4b10039a3b7", // network01_ssh_host_key
 });
 
 const network02 = deployNixOsVm("network02", "pve02", {
     ipAddress: "172.16.32.12/24",
     gateway: "172.16.32.1",
     vlanId: 10,
-    // hostKeySecretId: "<bitwarden id of note network02_ssh_host_key>",
+    hostKeySecretId: "ab10019c-6764-4b93-adc1-b4b10039a43d", // network02_ssh_host_key
 });
