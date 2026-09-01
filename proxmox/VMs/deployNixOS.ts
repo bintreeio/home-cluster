@@ -2,7 +2,7 @@ import * as pulumi from "@pulumi/pulumi";
 import {ImageName, osImage} from "../storage/images/imageCatalog";
 import * as proxmox from "@pulumi/proxmox";
 import {provider} from "../provider";
-import {pveNode} from "../../utils/checkpvehosts";
+import {pveNode} from "../utils/checkpvehosts";
 import * as command from "@pulumi/command";
 import getSecret from "../../utils/bitwardenAuth";
 interface VmArgs {
