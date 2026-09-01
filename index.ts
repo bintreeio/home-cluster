@@ -16,7 +16,12 @@ const network02 = deployNixOsVm("network02", "pve02", {
     hostKeySecretId: "ab10019c-6764-4b93-adc1-b4b10039a43d", // network02_ssh_host_key
 });
 
-const test = deployDebianVM("test", "pve01", {
-    ipAddress: "172.16.32.14/24",
-    gateway: "172.16.32.1",
-});
+// const test = deployDebianVM("test", "pve01", {
+//     ipAddress: "172.16.32.14/24",
+//     gateway: "172.16.32.1",
+// });
+//
+// const test2 = deployDebianVM("test2", "pve01", {
+//     ipAddress: "172.16.32.15/24",
+//     gateway: "172.16.32.1",
+// });
