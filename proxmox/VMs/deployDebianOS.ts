@@ -54,9 +54,7 @@ export function deployDebianVM(hostName: string, pxeHostName: string, args: VmAr
         ],
         initialization: {
             datastoreId: "local-lvm",
-            // scsi, not the default ide2: on q35 the ide2 cdrom lands on the AHCI
-            // bus, and the debian cloud kernel has no CONFIG_SATA_AHCI driver,
-            // so cloud-init never sees its datasource
+
             interface: "scsi1",
             userDataFileId: debianCloudInit(args.vmName ?? hostName, node.name).id,
             ipConfigs: [
