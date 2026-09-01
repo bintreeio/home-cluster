@@ -2,7 +2,7 @@ import * as pulumi from "@pulumi/pulumi";
 import {ImageName, osImage} from "../storage/images/imageCatalog";
 import * as proxmox from "@pulumi/proxmox";
 import {provider} from "../provider";
-import {pveNode} from "../../utils/checkpvehosts";
+import {pveNode} from "../utils/checkpvehosts";
 import debianCloudInit from "../storage/cloud-init/debianBase";
 import {Config} from "@pulumi/pulumi";
 
@@ -92,6 +92,7 @@ export function deployDebianVM(hostName: string, pveHostName: string, args: VmAr
             ...(args.enforcePlacement ?? true) ? [pveHostName] : [],
             ...(args.extraIgnoreChanges ?? []),
         ],
+        provider
     });
 
     return vm;

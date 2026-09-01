@@ -3,7 +3,7 @@ import {ImageName, osImage} from "../storage/images/imageCatalog";
 import * as proxmox from "@pulumi/proxmox";
 import {ignitionSnippetBase} from "../storage/cloud-init/flatcarBase";
 import {provider} from "../provider";
-import {pveNode} from "../../utils/checkpvehosts";
+import {pveNode} from "../utils/checkpvehosts";
 
 interface VmArgs {
     image?: ImageName;      // defaults to flatcar

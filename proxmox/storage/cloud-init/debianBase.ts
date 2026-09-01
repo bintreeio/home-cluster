@@ -25,6 +25,10 @@ function makeUserData(args: CloudInitArgs): string {
             sudo: "ALL=(ALL) NOPASSWD:ALL",
             groups: ["sudo"],
         }],
+        packages: ["qemu-guest-agent"],
+        runcmd: [
+            "systemctl enable --now qemu-guest-agent",
+        ],
     };
     return "#cloud-config\n" + yaml.stringify(doc);
 }
