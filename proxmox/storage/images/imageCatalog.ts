@@ -18,8 +18,8 @@ const imageCatalog = {
         fileName: 'talos-v1.13.8-metal-amd64.iso',
     },
     debian: {
-        url: "https://cloud.debian.org/images/cloud/bookworm/20260821-2577/debian-12-genericcloud-amd64-20260821-2577.qcow2",
-        fileName: "debian-12-genericcloud-20260821.qcow2"
+        url: "https://cloud.debian.org/images/cloud/trixie/20260831-2587/debian-13-generic-amd64-20260831-2587.qcow2",
+        fileName: "debian-13-genericcloud-20260831.qcow2"
     }
 
 
