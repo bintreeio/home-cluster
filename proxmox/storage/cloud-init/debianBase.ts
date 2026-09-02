@@ -15,6 +15,7 @@ function makeUserData(args: CloudInitArgs): string {
         hostname: args.hostname,
         fqdn: `${args.hostname}.${args.domain ?? "home.bintree.io"}`,
         preserve_hostname: false,
+        locale: "en_US.UTF-8",
         ssh_pwauth: false,
         disable_root: true,
         users: [{
