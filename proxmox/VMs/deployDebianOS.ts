@@ -22,10 +22,13 @@ interface VmArgs {
     extraIgnoreChanges?: string[];
     enforcePlacement?: boolean;
     replicateDisk?: boolean;
+    tags?: string[];
 
 }
-
-
+const DEFAULT_TAGS = ["debian", "pulumi", "managed", ]
+function defaultTags(extra: string[] = []): string [] {
+    return [...new Set([...DEFAULT_TAGS, ...extra])].sort();
+}
 
 
 export function deployDebianVM(hostName: string, pveHostName: string, args: VmArgs = {}) : proxmox.VirtualEnvironmentVm {
@@ -37,7 +40,7 @@ export function deployDebianVM(hostName: string, pveHostName: string, args: VmAr
         bios: "ovmf",                       // UEFI, matches systemd-boot + disko ESP
         machine: "q35",
         bootOrders: ["scsi0"],
-
+        tags: defaultTags(args.tags),
         efiDisk: { datastoreId: "local-lvm", type: "4m", preEnrolledKeys: false },
         // serial console works around the debian-12 genericcloud + OVMF + resized-disk
         // first-boot kernel panic (proxmox forum #160125, bpg provider issue #1639)
