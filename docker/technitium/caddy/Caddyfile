@@ -1,0 +1,57 @@
+# Static rendering of the Caddyfile that nix/containers/caddy.nix generates.
+# {$VAR} is substituted from the container environment at parse time (see compose.yaml).
+#
+# One wildcard site block + one DNS-01 wildcard cert: adding a vhost needs no new
+# issuance. To add one, add a matcher/handle pair below. HTTPS upstreams are internal
+# devices reached by IP whose certs never match, so encrypt without verifying and keep
+# the browser's Host header so upstream redirects (TrueNAS / -> /ui/) come back to the
+# vhost name rather than the upstream IP.
+{
+	email {env.acmeEmail}
+	acme_dns porkbun {
+		api_key {env.PORKBUN_API_KEY}
+		api_secret_key {env.PORKBUN_API_SECRET_KEY}
+	}
+}
+
+*.{$WILDCARD_DOMAIN} {
+	@dns host {$DNS_HOSTNAME}
+	handle @dns {
+		reverse_proxy 127.0.0.1:5380
+	}
+
+	@pve01 host pve01.{$WILDCARD_DOMAIN}
+	handle @pve01 {
+		reverse_proxy https://172.16.0.25:8006 {
+			header_up Host {http.request.host}
+			transport http {
+				tls_insecure_skip_verify
+			}
+		}
+	}
+
+	@pve02 host pve02.{$WILDCARD_DOMAIN}
+	handle @pve02 {
+		reverse_proxy https://172.16.0.26:8006 {
+			header_up Host {http.request.host}
+			transport http {
+				tls_insecure_skip_verify
+			}
+		}
+	}
+
+	@pve03 host pve03.{$WILDCARD_DOMAIN}
+	handle @pve03 {
+		reverse_proxy https://172.16.0.27:8006 {
+			header_up Host {http.request.host}
+			transport http {
+				tls_insecure_skip_verify
+			}
+		}
+	}
+
+	# Unmatched names under the wildcard are refused.
+	handle {
+		abort
+	}
+}
