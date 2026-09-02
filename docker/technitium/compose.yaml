@@ -1,0 +1,60 @@
+# Technitium DNS + Caddy reverse proxy, translated from nix/containers/{technitium,caddy}.nix.
+#
+# Usage:
+#   cp .env.example .env && cp secrets/technitium.env.example secrets/technitium.env \
+#     && cp secrets/caddy.env.example secrets/caddy.env   # then fill in values
+#   docker compose up -d
+#
+# Host prerequisites the NixOS modules handled and compose cannot:
+#   - Nothing else may listen on :53. On Debian/Ubuntu disable systemd-resolved's stub
+#     listener (DNSStubListener=no in /etc/systemd/resolved.conf) or stop the service.
+#   - Firewall: TCP+UDP 53 (DNS), TCP 5380 (admin UI), TCP 80/443 + UDP 443 (Caddy).
+#   - First run: browse http://<HOST_IP>:5380, log in admin/admin, set the password from
+#     secrets/technitium.env, create primary zone ${WILDCARD_DOMAIN} with A records
+#     (dns01 -> 172.16.32.11, dns02 -> 172.16.32.12, * -> 172.16.32.11), and set
+#     Settings -> Web Service -> Local Addresses to DNS_WEB_LISTEN. The env var below only
+#     applies on first init; an existing data dir keeps its saved config.
+#
+# Backups: tar ${DATA_DIR} (technitium config/zones + Caddy ACME certs). Skip ${LOG_DIR}.
+
+services:
+  technitium:
+    # Keep tag and digest in sync when upgrading (mirrors technitium.nix).
+    image: docker.io/technitium/dns-server:15.4.0@sha256:df7d90ef0f7b6fff6916d291a7022cd902290cc31c3141d4158b6c375a641b41
+    container_name: technitium
+    hostname: ${DNS_SERVER_DOMAIN}
+    # Host networking so DNS sees real client IPs and :53/:5380 bind directly.
+    network_mode: host
+    volumes:
+      - ${DATA_DIR:-./data}/technitium:/etc/dns
+      # Shadows <data>/logs so log files land outside the backed-up data dir.
+      - ${LOG_DIR:-./logs}/technitium:/etc/dns/logs
+    environment:
+      DNS_SERVER_DOMAIN: ${DNS_SERVER_DOMAIN}
+      # First-init only. Always include 127.0.0.1 (Caddy upstream) and the LAN IP
+      # so the UI stays reachable when the reverse proxy is down.
+      DNS_SERVER_WEB_SERVICE_LOCAL_ADDRESSES: ${DNS_WEB_LISTEN}
+    env_file:
+      - secrets/technitium.env   # DNS_SERVER_ADMIN_PASSWORD
+    restart: unless-stopped
+
+  caddy:
+    # Enabled only when COMPOSE_PROFILES=caddy (network01). DNS-only hosts leave it blank.
+    profiles: ["caddy"]
+    # Keep tag and digest in sync when upgrading (mirrors caddy.nix).
+    image: docker.io/serfriz/caddy-porkbun:2.11.4@sha256:d9bff9c5bebf4c4b5d4b44b1d977a205e610ced54e86faab67dfa50cc7760a91
+    container_name: caddy
+    network_mode: host
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ${DATA_DIR:-./data}/caddy/data:/data       # ACME certs/keys: back this up
+      - ${DATA_DIR:-./data}/caddy/config:/config
+    environment:
+      # Consumed by {$VAR} placeholders in caddy/Caddyfile.
+      WILDCARD_DOMAIN: ${WILDCARD_DOMAIN}
+      DNS_HOSTNAME: ${DNS_HOSTNAME}
+    env_file:
+      - secrets/caddy.env   # acmeEmail, PORKBUN_API_KEY, PORKBUN_API_SECRET_KEY
+    depends_on:
+      - technitium
+    restart: unless-stopped
