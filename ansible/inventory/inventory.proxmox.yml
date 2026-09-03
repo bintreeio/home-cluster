@@ -1,11 +1,12 @@
-plugin: community.general.proxmox
+plugin: community.proxmox.proxmox
 url: https://172.16.0.25:8006
-user: ansible@pve
-password: "{{ lookup('community.general.bitwarden_secrets_manager', '38b0f0b7-bd99-4d60-bc83-b2cc00721daf').value }}"
+user: tofu@pve
+token_id: tofu-proxmox-token
+token_secret: "{{ lookup('community.general.bitwarden_secrets_manager', '2acbcea8-c5ac-409a-b14d-b4ba002904f9').value }}"
 validate_certs: false
 want_facts: true
 want_proxmox_nodes_ansible_host: false
-# Group by tags or name patterns
+
 keyed_groups:
   - key: proxmox_tags_parsed
     separator: ""
@@ -14,7 +15,7 @@ keyed_groups:
 groups:
   debian: "'debian' in (proxmox_tags_parsed|list)"
   databases: "'db' in (proxmox_tags_parsed|list)"
-  talos: "'talos'  in (proxmox_tags_parsed|list)"
+  talos: "'talos' in (proxmox_tags_parsed|list)"
 
 compose:
   ansible_host: proxmox_ipconfig0["ip"].split('/')[0] | default(proxmox_net0.ip) | ipaddr('address')
