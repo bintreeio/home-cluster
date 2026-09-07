@@ -7,20 +7,8 @@
   tasks:
     - name: Install prerequisites
       ansible.builtin.apt:
-        name: [ca-certificates, curl]
+        name: [ca-certificates, curl, python3-debian]
         update_cache: yes
-
-    - name: Create keyrings directory
-      ansible.builtin.file:
-        path: /etc/apt/keyrings
-        state: directory
-        mode: "0755"
-
-    - name: Add Docker GPG key
-      ansible.builtin.get_url:
-        url: https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg
-        dest: /etc/apt/keyrings/docker.asc
-        mode: "0644"
 
     - name: Get dpkg architecture
       ansible.builtin.command: dpkg --print-architecture
@@ -28,13 +16,15 @@
       changed_when: false
 
     - name: Add Docker repository
-      ansible.builtin.apt_repository:
-        repo: >-
-          deb [arch={{ dpkg_arch.stdout }} signed-by=/etc/apt/keyrings/docker.asc]
-          https://download.docker.com/linux/{{ ansible_distribution | lower }}
-          {{ ansible_distribution_release }} stable
+      ansible.builtin.deb822_repository:
+        name: docker
+        types: deb
+        uris: https://download.docker.com/linux/{{ ansible_distribution | lower }}
+        suites: "{{ ansible_distribution_release }}"
+        components: stable
+        architectures: "{{ dpkg_arch.stdout }}"
+        signed_by: https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg
         state: present
-        filename: docker
 
     - name: Install Docker
       ansible.builtin.apt:
