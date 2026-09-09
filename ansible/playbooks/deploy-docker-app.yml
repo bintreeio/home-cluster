@@ -1,0 +1,47 @@
+# Deploy one docker app from a git checkout ON THE HOST (for the Forgejo runner / CI).
+# For running from your workstation use deploy-docker-app-local.yml.
+#
+#   ansible-playbook playbooks/deploy-docker-app.yml \
+#     -i inventory/hosts.yml -e target_host=network02 -e folder=technitium \
+#     [-e checkout_repo_path=/opt/iac]
+#
+# Secrets: docker/secret-mappings.yml (read on the control machine) -> bws.
+# Plain config: inventory/host_vars/<host>.yml docker_app_env.<folder>.
+- name: Deploy docker app from git checkout on the host
+  hosts: "{{ target_host }}"
+  vars:
+    checkout_repo_path: /opt/iac
+    app_dir: "{{ checkout_repo_path }}/docker/{{ folder }}"
+    secrets_mapping_file: "{{ playbook_dir }}/../../docker/secret-mappings.yml"
+  pre_tasks:
+    - name: Require target_host and folder
+      ansible.builtin.assert:
+        that:
+          - target_host is defined
+          - folder is defined
+          - docker_app_env[folder] is defined
+        fail_msg: "pass -e target_host=<inventory host> -e folder=<docker/<folder>> and define docker_app_env.{{ folder | default('<folder>') }} in host_vars"
+        quiet: true
+  tasks:
+    - name: Reset the repository to the remote main branch
+      ansible.builtin.shell: |
+        git fetch origin main
+        git checkout -B main origin/main
+        git reset --hard origin/main
+      args:
+        chdir: "{{ checkout_repo_path }}"
+      register: git_sync_output
+
+    - name: Display git synchronization output
+      ansible.builtin.debug:
+        var: git_sync_output.stdout_lines
+
+    - name: App-specific host prerequisites (tasks/pre-<folder>.yml, if any)
+      ansible.builtin.include_tasks: "{{ item }}"
+      with_first_found:
+        - files:
+            - "tasks/pre-{{ folder }}.yml"
+          skip: true
+
+    - name: Deploy
+      ansible.builtin.include_tasks: tasks/docker-app.yml
