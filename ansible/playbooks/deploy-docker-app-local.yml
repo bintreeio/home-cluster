@@ -1,0 +1,47 @@
+# Deploy one docker app from THIS machine's checkout (no git on the host).
+# For the Forgejo runner use deploy-docker-app.yml instead.
+#
+#   cd ansible && source .env
+#   ansible-playbook playbooks/deploy-docker-app-local.yml \
+#     -i inventory/hosts.yml -e target_host=network02 -e folder=technitium
+#
+# Secrets: docker/secret-mappings.yml -> bws (needs BWS_ACCESS_TOKEN in the environment).
+# Plain config: inventory/host_vars/<host>.yml docker_app_env.<folder>.
+- name: Deploy docker app from local checkout
+  hosts: "{{ target_host }}"
+  vars:
+    app_dir: "{{ docker_root }}/{{ folder }}"
+    app_src_dir: "{{ playbook_dir }}/../../docker/{{ folder }}/"
+    secrets_mapping_file: "{{ playbook_dir }}/../../docker/secret-mappings.yml"
+  pre_tasks:
+    - name: Require target_host and folder
+      ansible.builtin.assert:
+        that:
+          - target_host is defined
+          - folder is defined
+          - docker_app_env[folder] is defined
+        fail_msg: "pass -e target_host=<inventory host> -e folder=<docker/<folder>> and define docker_app_env.{{ folder | default('<folder>') }} in host_vars"
+        quiet: true
+  tasks:
+    - name: App-specific host prerequisites (tasks/pre-<folder>.yml, if any)
+      ansible.builtin.include_tasks: "{{ item }}"
+      with_first_found:
+        - files:
+            - "tasks/pre-{{ folder }}.yml"
+          skip: true
+
+    - name: Ensure {{ app_dir }} exists
+      ansible.builtin.file:
+        path: "{{ app_dir }}"
+        state: directory
+        mode: "0750"
+
+    - name: Copy docker/{{ folder }}/ to {{ app_dir }}
+      ansible.builtin.copy:
+        src: "{{ app_src_dir }}"
+        dest: "{{ app_dir }}/"
+        mode: "0644"
+        directory_mode: "0750"
+
+    - name: Deploy
+      ansible.builtin.include_tasks: tasks/docker-app.yml

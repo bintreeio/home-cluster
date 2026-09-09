@@ -1,0 +1,98 @@
+# Shared deploy steps for one docker app. Included by deploy-docker-app-local.yml
+# (files copied from the control machine) and deploy-docker-app.yml (git checkout
+# on the host). Expects:
+#   folder               app folder name under docker/ (e.g. technitium, caddy)
+#   app_dir              directory on the host holding compose.yml
+#   secrets_mapping_file path on the control machine to docker/secret-mappings.yml
+#   docker_app_env       (inventory) dict of per-app non-secret env vars
+#   docker_root          (inventory) base dir for appdata bind mounts
+
+- name: Read secret mapping from the control machine
+  ansible.builtin.set_fact:
+    secret_mapping: "{{ lookup('ansible.builtin.file', secrets_mapping_file) | from_yaml }}"
+
+- name: Select env sources for {{ folder }}
+  ansible.builtin.set_fact:
+    app_secret_ids: "{{ secret_mapping[folder]['env_variables'] | default({}) }}"
+    app_plain_env: "{{ docker_app_env[folder] | default({}) }}"
+
+- name: Refuse placeholder secret IDs
+  ansible.builtin.assert:
+    that: item.value is match('^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$')
+    fail_msg: >-
+      docker/secret-mappings.yml: {{ folder }}.env_variables.{{ item.key }} is not a
+      Bitwarden secret ID ({{ item.value }}). Create the secret with bws and paste its ID.
+    quiet: true
+  loop: "{{ app_secret_ids | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+
+- name: Look up secrets in Bitwarden on the control machine
+  ansible.builtin.command: bws secret get --color no -o json {{ item.value }}
+  loop: "{{ app_secret_ids | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  register: bws_secret_output
+  delegate_to: localhost
+  become: false
+  changed_when: false
+  no_log: true
+
+- name: Build secret env dict
+  ansible.builtin.set_fact:
+    app_secret_env: "{{ app_secret_env | default({}) | combine({item.item.key: (item.stdout | from_json).value}) }}"
+  loop: "{{ bws_secret_output.results }}"
+  loop_control:
+    label: "{{ item.item.key }}"
+  no_log: true
+
+- name: Merge HOST + plain config + secrets
+  ansible.builtin.set_fact:
+    app_env: "{{ {'HOST': ansible_hostname} | combine(app_plain_env, app_secret_env | default({})) }}"
+  no_log: true
+
+- name: Ensure appdata directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0750"
+  loop:
+    - "{{ docker_root }}/appdata/{{ folder }}"
+    - "{{ docker_root }}/appdata/{{ folder }}/logs"
+
+- name: Back up existing .env and keep the 5 newest backups
+  ansible.builtin.shell: |
+    if [ -f .env ]; then
+      cp .env .env.bak.$(date +%Y-%m-%d-%H-%M-%S)
+    fi
+    ls -1t -- .env.bak.* 2>/dev/null | tail -n +6 | xargs -r rm -f --
+  args:
+    chdir: "{{ app_dir }}"
+  changed_when: false
+
+- name: Write .env
+  ansible.builtin.copy:
+    dest: "{{ app_dir }}/.env"
+    mode: "0600"
+    content: |
+      {% for key, value in app_env.items() %}
+      {{ key }}={{ value }}
+      {% endfor %}
+  no_log: true
+
+- name: Bring up {{ folder }} with Docker Compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ app_dir }}"
+    state: present
+    remove_orphans: true
+
+- name: Show compose status
+  ansible.builtin.command: docker compose ps
+  args:
+    chdir: "{{ app_dir }}"
+  register: docker_output
+  changed_when: false
+
+- name: Display compose status
+  ansible.builtin.debug:
+    var: docker_output.stdout_lines

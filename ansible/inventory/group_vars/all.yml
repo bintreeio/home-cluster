@@ -1,0 +1,8 @@
+# Non-secret config shared by every host. Secrets never go here: they are looked up
+# from Bitwarden via docker/secret-mappings.yml at deploy time.
+wildcard_domain: home.bintree.io
+acme_email: psycholomo@gmail.com
+
+# Where docker apps live on the host: /docker/<app> (compose + .env) and
+# /docker/appdata/<app>/{data,logs} (bind mounts).
+docker_root: /docker
