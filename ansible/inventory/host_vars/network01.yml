@@ -1,0 +1,10 @@
+# network01 (pve01) — primary DNS + Caddy reverse proxy. Mirrors nix/hosts/network01.nix.
+# Per-app env written to /docker/<app>/.env by the deploy playbooks (non-secret values only).
+docker_app_env:
+  technitium:
+    DNS_SERVER_DOMAIN: dns01.home.bintree.io
+    DNS_WEB_LISTEN: "127.0.0.1,172.16.32.11"
+  caddy:
+    WILDCARD_DOMAIN: "{{ wildcard_domain }}"
+    DNS_HOSTNAME: dns01.home.bintree.io
+    ACME_EMAIL: "{{ acme_email }}"

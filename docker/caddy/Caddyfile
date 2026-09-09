@@ -1,5 +1,5 @@
 # Static rendering of the Caddyfile that nix/containers/caddy.nix generates.
-# {$VAR} is substituted from the container environment at parse time (see compose.yaml).
+# {$VAR} / {env.VAR} come from the container environment (see compose.yml + .env).
 #
 # One wildcard site block + one DNS-01 wildcard cert: adding a vhost needs no new
 # issuance. To add one, add a matcher/handle pair below. HTTPS upstreams are internal
@@ -7,7 +7,7 @@
 # the browser's Host header so upstream redirects (TrueNAS / -> /ui/) come back to the
 # vhost name rather than the upstream IP.
 {
-	email {env.acmeEmail}
+	email {env.ACME_EMAIL}
 	acme_dns porkbun {
 		api_key {env.PORKBUN_API_KEY}
 		api_secret_key {env.PORKBUN_API_SECRET_KEY}
@@ -15,6 +15,15 @@
 }
 
 *.{$WILDCARD_DOMAIN} {
+	# Access logs land in the /docker/appdata/caddy/logs bind mount.
+	log {
+		output file /var/log/caddy/access.log {
+			roll_size 10mb
+			roll_keep 5
+		}
+		format json
+	}
+
 	@dns host {$DNS_HOSTNAME}
 	handle @dns {
 		reverse_proxy 127.0.0.1:5380

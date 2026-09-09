@@ -1,0 +1,39 @@
+# Caddy reverse proxy (ACME DNS-01 via Porkbun). Deployed by
+# ansible/playbooks/deploy-docker-app-local.yml (or deploy-docker-app.yml from the
+# git runner), which writes ./.env from inventory host_vars (plain config) +
+# docker/secret-mappings.yml (Bitwarden).
+#
+# Host layout (see docker/README.md):
+#   /docker/caddy/                  this file, Caddyfile, generated .env
+#   /docker/appdata/caddy/data      ACME certs/keys (back this up)
+#   /docker/appdata/caddy/config
+#   /docker/appdata/caddy/logs      access logs (collected later, disposable)
+#
+# Firewall: TCP 80/443, UDP 443 (HTTP/3).
+
+services:
+  caddy:
+    # Keep tag and digest in sync when upgrading (mirrors nix/containers/caddy.nix).
+    image: docker.io/serfriz/caddy-porkbun:2.11.4@sha256:d9bff9c5bebf4c4b5d4b44b1d977a205e610ced54e86faab67dfa50cc7760a91
+    container_name: caddy
+    # Host networking: the Caddyfile proxies to technitium on the host's 127.0.0.1:5380.
+    network_mode: host
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - /docker/appdata/caddy/data:/data
+      - /docker/appdata/caddy/config:/config
+      - /docker/appdata/caddy/logs:/var/log/caddy
+    environment:
+      # Consumed by {$VAR} / {env.VAR} in ./Caddyfile.
+      ACME_EMAIL: ${ACME_EMAIL}
+      WILDCARD_DOMAIN: ${WILDCARD_DOMAIN}
+      DNS_HOSTNAME: ${DNS_HOSTNAME}
+      # From Bitwarden via docker/secret-mappings.yml.
+      PORKBUN_API_KEY: ${PORKBUN_API_KEY}
+      PORKBUN_API_SECRET_KEY: ${PORKBUN_API_SECRET_KEY}
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
