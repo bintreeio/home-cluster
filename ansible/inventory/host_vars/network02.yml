@@ -1,0 +1,10 @@
+# network02 (pve02) — secondary DNS. Mirrors nix/hosts/network02.nix.
+# Per-app env written to /docker/<app>/.env by the deploy playbooks (non-secret values only).
+docker_app_env:
+  technitium:
+    DNS_SERVER_DOMAIN: dns02.home.bintree.io
+    DNS_WEB_LISTEN: "127.0.0.1,172.16.32.12"
+  caddy:
+    WILDCARD_DOMAIN: "{{ wildcard_domain }}"
+    DNS_HOSTNAME: dns02.home.bintree.io
+    ACME_EMAIL: "{{ acme_email }}"

@@ -1,0 +1,37 @@
+# Technitium DNS server. Deployed by ansible/playbooks/deploy-docker-app-local.yml
+# (or deploy-docker-app.yml from the git runner), which writes ./.env from
+# inventory host_vars (plain config) + docker/secret-mappings.yml (Bitwarden).
+#
+# Host layout (see docker/README.md):
+#   /docker/technitium/                 this file + generated .env
+#   /docker/appdata/technitium/data     config + zones (back this up)
+#   /docker/appdata/technitium/logs     log files (collected later, disposable)
+#
+# Host prerequisites: nothing else may listen on :53 (the playbook disables
+# systemd-resolved's stub listener); firewall TCP+UDP 53, TCP 5380.
+
+services:
+  technitium:
+    # Keep tag and digest in sync when upgrading (mirrors nix/containers/technitium.nix).
+    image: docker.io/technitium/dns-server:15.4.0@sha256:df7d90ef0f7b6fff6916d291a7022cd902290cc31c3141d4158b6c375a641b41
+    container_name: technitium
+    hostname: ${DNS_SERVER_DOMAIN}
+    # Host networking so DNS sees real client IPs and :53/:5380 bind directly.
+    network_mode: host
+    volumes:
+      - /docker/appdata/technitium/data:/etc/dns
+      # The image logs to /var/log/technitium/dns (settings logFolder), not <data>/logs.
+      - /docker/appdata/technitium/logs:/var/log/technitium
+    environment:
+      DNS_SERVER_DOMAIN: ${DNS_SERVER_DOMAIN}
+      # First-init only. Always include 127.0.0.1 (Caddy upstream) and the LAN IP
+      # so the UI stays reachable when the reverse proxy is down.
+      DNS_SERVER_WEB_SERVICE_LOCAL_ADDRESSES: ${DNS_WEB_LISTEN}
+      # First-init only. From Bitwarden via docker/secret-mappings.yml.
+      DNS_SERVER_ADMIN_PASSWORD: ${DNS_SERVER_ADMIN_PASSWORD}
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
