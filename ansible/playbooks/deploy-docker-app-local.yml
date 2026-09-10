@@ -6,7 +6,7 @@
 #     -i inventory/hosts.yml -e target_host=network02 -e folder=technitium
 #
 # Secrets: docker/secret-mappings.yml -> bws (needs BWS_ACCESS_TOKEN in the environment).
-# Plain config: inventory/host_vars/<host>.yml docker_app_env.<folder>.
+
 - name: Deploy docker app from local checkout
   hosts: "{{ target_host }}"
   vars:
@@ -19,7 +19,7 @@
         that:
           - target_host is defined
           - folder is defined
-          - docker_app_env[folder] is defined
+
         fail_msg: "pass -e target_host=<inventory host> -e folder=<docker/<folder>> and define docker_app_env.{{ folder | default('<folder>') }} in host_vars"
         quiet: true
   tasks:
