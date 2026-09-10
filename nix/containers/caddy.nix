@@ -33,8 +33,13 @@ let
   '') cfg.virtualHosts;
 
   # One site block, one wildcard cert: adding a vhost needs no new issuance.
+  # ACME propagation checks go straight to public resolvers: technitium on the
+  # same host is authoritative for the zone internally and would shadow Porkbun.
   wildcardBlock = ''
     *.${cfg.wildcardDomain} {
+      tls {
+        resolvers 1.1.1.1 9.9.9.9
+      }
     ${lib.concatStringsSep "\n" wildcardHandlers}
       handle {
         abort

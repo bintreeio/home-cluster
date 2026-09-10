@@ -15,6 +15,13 @@
 }
 
 *.{$WILDCARD_DOMAIN} {
+	# The DNS-01 propagation check must reach Porkbun's authoritative servers. Never
+	# use the host resolvers: technitium on this box is authoritative for the same
+	# zone internally and would answer for _acme-challenge instead of Porkbun.
+	tls {
+		resolvers 1.1.1.1 9.9.9.9
+	}
+
 	# Access logs land in the /docker/appdata/caddy/logs bind mount.
 	log {
 		output file /var/log/caddy/access.log {

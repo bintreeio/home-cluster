@@ -16,6 +16,11 @@ interface VmArgs {
     vmName?: string;
     ipAddress?: string;
     gateway?: string
+    /** Resolvers written into the guest by cloud-init. Defaults to public resolvers:
+     *  without this Proxmox copies the PVE node's own resolv.conf into the VM, and the
+     *  DNS servers themselves must not resolve through themselves (bootstrap +
+     *  split-horizon ACME failures). Point every *other* host at dns01/dns02. */
+    dnsServers?: string[];
     userDataFileId?: pulumi.Input<string>;
     protect?: boolean;
     retainOnDelete?: boolean;
@@ -70,6 +75,7 @@ export function deployDebianVM(hostName: string, pveHostName: string, args: VmAr
 
             interface: "scsi1",
             userDataFileId: debianCloudInit(args.vmName ?? hostName, node.name).id,
+            dns: { servers: args.dnsServers ?? ["1.1.1.1", "9.9.9.9"] },
             ipConfigs: [
                 {
                     ipv4: args.ipAddress
