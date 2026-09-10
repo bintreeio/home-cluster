@@ -28,6 +28,10 @@
 	handle @dns {
 		reverse_proxy 127.0.0.1:5380
 	}
+    @dns02 host dns02.{$WILDCARD_DOMAIN}
+    handle @dns02 {
+        reverse_proxy 127.0.0.1:5380
+    }
 
 	@pve01 host pve01.{$WILDCARD_DOMAIN}
 	handle @pve01 {
