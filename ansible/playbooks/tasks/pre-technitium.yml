@@ -1,6 +1,4 @@
 # Host prerequisites for technitium: nothing else may listen on :53.
-# Debian cloud images normally don't run systemd-resolved; if one does, turn off its
-# stub listener and point /etc/resolv.conf at the real upstream file.
 
 - name: Check whether systemd-resolved is active
   ansible.builtin.command: systemctl is-active systemd-resolved

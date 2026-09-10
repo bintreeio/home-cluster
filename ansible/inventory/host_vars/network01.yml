@@ -7,4 +7,3 @@ docker_app_env:
   caddy:
     WILDCARD_DOMAIN: "{{ wildcard_domain }}"
     DNS_HOSTNAME: dns01.home.bintree.io
-    ACME_EMAIL: "{{ acme_email }}"

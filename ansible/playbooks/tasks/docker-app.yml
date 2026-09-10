@@ -13,8 +13,8 @@
 
 - name: Select env sources for {{ folder }}
   ansible.builtin.set_fact:
-    app_secret_ids: "{{ secret_mapping[folder]['env_variables'] | default({}) }}"
-    app_plain_env: "{{ docker_app_env[folder] | default({}) }}"
+    app_secret_ids: "{{ (secret_mapping | default({}))[folder]['env_variables'] | default({}) if folder in (secret_mapping | default({})) else {} }}"
+    app_plain_env: "{{ (docker_app_env | default({}))[folder] | default({}) }}"
 
 - name: Refuse placeholder secret IDs
   ansible.builtin.assert:
