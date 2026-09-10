@@ -39,4 +39,7 @@ There are no hand-written env files. The playbooks generate `/docker/<app>/.env`
   password and web-listen addresses only apply on first init; an existing data dir keeps
   its saved config.
 - `caddy/` — reverse proxy with a `*.home.bintree.io` wildcard cert (Porkbun DNS-01).
-  Runs on network01. Add a vhost by adding a matcher/handle pair in `Caddyfile`.
+  Runs on network01 and network02 (each issues its own copy of the cert). Add a vhost by
+  adding a matcher/handle pair in `Caddyfile`. The DNS-01 propagation check uses public
+  resolvers (`tls { resolvers }`), and the DNS hosts themselves must resolve through
+  public upstreams, not through technitium (see `deployDebianOS.ts` `dnsServers`).
