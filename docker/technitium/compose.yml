@@ -1,7 +1,5 @@
 # Technitium DNS server. Deployed by ansible/playbooks/deploy-docker-app-local.yml
-# (or deploy-docker-app.yml from the git runner), which writes ./.env from
-# inventory host_vars (plain config) + docker/secret-mappings.yml (Bitwarden).
-#
+
 # Host layout (see docker/README.md):
 #   /docker/technitium/                 this file + generated .env
 #   /docker/appdata/technitium/data     config + zones (back this up)
@@ -20,7 +18,6 @@ services:
     network_mode: host
     volumes:
       - /docker/appdata/technitium/data:/etc/dns
-      # The image logs to /var/log/technitium/dns (settings logFolder), not <data>/logs.
       - /docker/appdata/technitium/logs:/var/log/technitium
     environment:
       DNS_SERVER_DOMAIN: ${DNS_SERVER_DOMAIN}
