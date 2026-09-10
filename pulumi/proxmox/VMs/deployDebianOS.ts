@@ -75,7 +75,7 @@ export function deployDebianVM(hostName: string, pveHostName: string, args: VmAr
 
             interface: "scsi1",
             userDataFileId: debianCloudInit(args.vmName ?? hostName, node.name).id,
-            dns: { servers: args.dnsServers ?? ["1.1.1.1", "9.9.9.9"] },
+            dns: { servers: args.dnsServers ?? ["172.16.32.11", "172.16.32.12"] },
             ipConfigs: [
                 {
                     ipv4: args.ipAddress
