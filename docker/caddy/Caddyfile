@@ -15,9 +15,7 @@
 }
 
 *.{$WILDCARD_DOMAIN} {
-	# The DNS-01 propagation check must reach Porkbun's authoritative servers. Never
-	# use the host resolvers: technitium on this box is authoritative for the same
-	# zone internally and would answer for _acme-challenge instead of Porkbun.
+	# The DNS-01 propagation check must reach Porkbun's authoritative servers.
 	tls {
 		resolvers 1.1.1.1 9.9.9.9
 	}

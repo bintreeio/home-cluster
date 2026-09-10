@@ -25,21 +25,6 @@ There are no hand-written env files. The playbooks generate `/docker/<app>/.env`
 - **Secrets** — `secret-mappings.yml`, mapping env var names to Bitwarden Secrets Manager
   IDs, resolved with `bws` on the machine running Ansible:
 
-  ```yaml
-  <app>:
-    env_variables:
-      SOME_VAR: <bws secret id>
-  ```
 
-  List IDs with `bws secret list --color no -o json | jq -r '.[] | "\(.id)  \(.key)"'`.
 
-## Apps
 
-- `technitium/` — DNS. Runs on network01 (dns01) and network02 (dns02). The admin
-  password and web-listen addresses only apply on first init; an existing data dir keeps
-  its saved config.
-- `caddy/` — reverse proxy with a `*.home.bintree.io` wildcard cert (Porkbun DNS-01).
-  Runs on network01 and network02 (each issues its own copy of the cert). Add a vhost by
-  adding a matcher/handle pair in `Caddyfile`. The DNS-01 propagation check uses public
-  resolvers (`tls { resolvers }`), and the DNS hosts themselves must resolve through
-  public upstreams, not through technitium (see `deployDebianOS.ts` `dnsServers`).
