@@ -1,5 +1,5 @@
 # Runs after compose up for folder=caddy. The Caddyfile is a bind mount, so compose
-# does not restart the container when only that file changes; ask caddy to reload it.
+# does not restart the container.
 - name: Reload the Caddyfile in the running container
   ansible.builtin.command: docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile
   args:
