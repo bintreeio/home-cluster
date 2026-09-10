@@ -44,3 +44,10 @@
 
     - name: Deploy
       ansible.builtin.include_tasks: tasks/docker-app.yml
+
+    - name: App-specific post-deploy steps (tasks/post-<folder>.yml, if any)
+      ansible.builtin.include_tasks: "{{ item }}"
+      with_first_found:
+        - files:
+            - "tasks/post-{{ folder }}.yml"
+          skip: true
