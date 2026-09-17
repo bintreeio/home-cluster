@@ -5,6 +5,7 @@
 *.pem
 *.key
 *.crt
+/docker/caddy/Caddyfile
 
 # Pulumi
 # Never commit state or plaintext config secrets
@@ -12,6 +13,8 @@
 Pulumi.*.yaml.bak
 *.checkpoint.json
 pulumi-plan.json
+/pulumi/sdks/
+/pulumi/node_modules/
 
 # Kubernetes
 kubeconfig
@@ -57,5 +60,4 @@ tmp/
 
 /.claude/
 /.bitwarden/
-/pulumi/sdks/
-/pulumi/node_modules/
+
