@@ -1,4 +1,3 @@
-# Static rendering of the Caddyfile that nix/containers/caddy.nix generates.
 # {$VAR} / {env.VAR} come from the container environment (see compose.yml + .env).
 #
 # One wildcard site block + one DNS-01 wildcard cert: adding a vhost needs no new

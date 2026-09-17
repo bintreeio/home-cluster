@@ -1,0 +1,38 @@
+services:
+  dnsweaver:
+    image: ghcr.io/maxfield-allison/dnsweaver:latest
+    container_name: dnsweaver
+    restart: unless-stopped
+    environment:
+      DNSWEAVER_SOURCES: proxmox
+
+
+      DNSWEAVER_PROXMOX_URL: https://pve01.home.bintree.io
+      DNSWEAVER_PROXMOX_TOKEN_ID: dnsweaver@pve!dnsweaver
+      DNSWEAVER_PROXMOX_TOKEN_SECRET_FILE: /run/secrets/pve_token
+      DNSWEAVER_PROXMOX_TLS_SKIP_VERIFY: "true"
+      DNSWEAVER_PROXMOX_DOMAIN_SUFFIX: home.bintree.io
+
+      # --- Providers (both are the same Technitium server) ---
+      DNSWEAVER_INSTANCES: apps,pve
+
+      # Proxmox guests -> A record to their own IP (source supplies the IP)
+      DNSWEAVER_PVE_TYPE: technitium
+      DNSWEAVER_PVE_URL: http://10.0.0.5:5380
+      DNSWEAVER_PVE_TOKEN_FILE: /run/secrets/technitium_token
+      DNSWEAVER_PVE_ZONE: home.example.com
+      DNSWEAVER_PVE_RECORD_TYPE: A
+      DNSWEAVER_PVE_DOMAINS: "*.pve.home.example.com"
+
+      DNSWEAVER_LOG_LEVEL: info
+    volumes:
+      - /docker/appdata/dnsweaver/docker.sock:/var/run/docker.sock:ro
+    secrets:
+      - technitium_token
+      - pve_token
+
+secrets:
+  technitium_token:
+    file: ./secrets/technitium_token
+  pve_token:
+    file: ./secrets/pve_token
