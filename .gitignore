@@ -22,6 +22,9 @@ kubeconfig.*
 *.kubeconfig
 charts/*.tgz
 
+#nas configurations
+/docker/nas/
+
 # Talos / cluster bootstrap secrets
 talosconfig
 secrets.yaml
@@ -60,4 +63,5 @@ tmp/
 
 /.claude/
 /.bitwarden/
+
 
