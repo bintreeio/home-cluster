@@ -24,27 +24,9 @@ Proxmox creates fixed subfolders under the export, one per content type:
 | ISOs                  | `<export>/template/iso/` |
 | import images (qcow2) | `<export>/import/`       |
 
-### One-time TrueNAS setup
-
-1. Datasets: add a dedicated dataset for Proxmox on the pool of your choice. Owner `root:root`, mode 755.
-2. Shares > NFS: add a share for that path.
-   - Authorized networks: `172.16.0.0/24` (PVE management VLAN).
-   - Maproot user/group: `root`/`root`. PVE writes as uid 0 on every node, so this
-     keeps ownership consistent with no UID matching.
-3. Services: NFS enabled with NFSv4 on.
-4. Verify from a PVE node before running Pulumi:
-
-   ```
-   showmount -e <nas-ip>
-   mkdir -p /mnt/test
-   mount -t nfs -o vers=4 <nas-ip>:<export-path> /mnt/test
-   touch /mnt/test/x && ls -l /mnt/test
-   umount /mnt/test && rmdir /mnt/test
-   ```
-
-   "access denied by server" means the share is not exported, NFS is off, or the
-   authorized network does not cover the client IP the NAS sees. Permission denied on
-   `touch` means maproot is not root.
+"access denied by server" means the share is not exported, NFS is off, or the
+authorized network does not cover the client IP the NAS sees. Permission denied on
+`touch` means maproot is not root.
 
 ### Checking on a PVE node
 

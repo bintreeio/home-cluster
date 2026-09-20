@@ -22,7 +22,7 @@ export const localStorage = new proxmox.StorageDirectory(
 /** Shared NFS datastore on the NAS. One copy of every snippet / image / ISO, visible
  *  from all nodes. PVE creates fixed subdirs under the export: snippets/,
  *  template/iso/, import/. The dataset + NFS share are created by hand in TrueNAS
- *  (see README). VM disks stay on local-lvm. */
+ */
 export const nasStorage = new proxmox.StorageNfs(
     "nas",
     {
