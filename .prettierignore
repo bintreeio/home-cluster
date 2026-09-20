@@ -1,0 +1,8 @@
+node_modules/
+pulumi/sdks/
+pulumi/bin/
+package-lock.json
+docker/nas/
+docker/caddy/Caddyfile
+**/.env
+**/.env.*

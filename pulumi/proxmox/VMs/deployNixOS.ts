@@ -1,12 +1,12 @@
 import * as pulumi from "@pulumi/pulumi";
-import {ImageName, osImage} from "../storage/images/imageCatalog";
+import { ImageName, osImage } from "../storage/images/imageCatalog";
 import * as proxmox from "@pulumi/proxmox";
-import {provider} from "../provider";
-import {pveNode} from "../utils/checkpvehosts";
+import { provider } from "../provider";
+import { pveNode } from "../utils/checkpvehosts";
 import * as command from "@pulumi/command";
 import getSecret from "../../utils/bitwardenAuth";
 interface VmArgs {
-    image?: ImageName;      // defaults to flatcar
+    image?: ImageName; // defaults to flatcar
     cores?: number;
     memoryMb?: number;
     osDiskSize?: number;
@@ -14,7 +14,7 @@ interface VmArgs {
     vlanId?: number;
     vmName?: string;
     ipAddress: string;
-    gateway: string
+    gateway: string;
     userDataFileId?: pulumi.Input<string>;
     protect?: boolean;
     retainOnDelete?: boolean;
@@ -31,12 +31,18 @@ interface NixOsVmDeployment {
 
 const cfg = new pulumi.Config();
 
-export function deployNixOsVm(hostName: string, pxeHostName: string, args: VmArgs) : NixOsVmDeployment {
+export function deployNixOsVm(
+    hostName: string,
+    pxeHostName: string,
+    args: VmArgs
+): NixOsVmDeployment {
     const node = pveNode(pxeHostName);
-    const vm = new proxmox.VirtualEnvironmentVm(hostName, {
+    const vm = new proxmox.VirtualEnvironmentVm(
+        hostName,
+        {
             name: args.vmName ?? hostName,
             stopOnDestroy: true,
-            bios: "ovmf",                       // UEFI, matches systemd-boot + disko ESP
+            bios: "ovmf", // UEFI, matches systemd-boot + disko ESP
             machine: "q35",
             bootOrders: ["virtio0"],
             // preEnrolledKeys=false: MS secure-boot keys would reject unsigned systemd-boot
@@ -47,15 +53,20 @@ export function deployNixOsVm(hostName: string, pxeHostName: string, args: VmArg
             nodeName: node.name, //pve01, pve02, pve03
             cpu: {
                 cores: args.cores ?? 2,
-                type: "host",
+                type: "host"
             },
             // debian genericcloud ships no qemu-guest-agent; enabled=true makes the
             // provider block on VM create waiting for an agent that never starts
             agent: { enabled: false },
             // nixos-anywhere's kexec installer keeps the nix store in tmpfs; <4G OOMs with --build-on remote
-            memory: { dedicated: args.memoryMb ?? 4096},
+            memory: { dedicated: args.memoryMb ?? 4096 },
             disks: [
-                { interface: "virtio0", datastoreId: "local-lvm", size: args.osDiskSize ?? 16, importFrom: osImage('debian', pxeHostName).id},
+                {
+                    interface: "virtio0",
+                    datastoreId: "local-lvm",
+                    size: args.osDiskSize ?? 16,
+                    importFrom: osImage("debian", pxeHostName).id
+                }
             ],
             initialization: {
                 datastoreId: "local-lvm",
@@ -65,25 +76,27 @@ export function deployNixOsVm(hostName: string, pxeHostName: string, args: VmArg
                     {
                         ipv4: args.ipAddress
                             ? { address: args.ipAddress, gateway: args.gateway }
-                            : { address: "dhcp" },
-                    },
+                            : { address: "dhcp" }
+                    }
                 ],
                 userAccount: {
                     username: "root",
-                    keys: [cfg.require("flatcar_ssh_key")],
-                },
+                    keys: [cfg.require("flatcar_ssh_key")]
+                }
             },
 
-            networkDevices: [{
-                bridge: "vmbr0",
-                vlanId: args.vlanId ?? 10,
-            }],
-
-
-        }, {
+            networkDevices: [
+                {
+                    bridge: "vmbr0",
+                    vlanId: args.vlanId ?? 10
+                }
+            ]
+        },
+        {
             protect: args.protect ?? false,
             retainOnDelete: args.retainOnDelete ?? false,
-            provider: provider,}
+            provider: provider
+        }
     );
 
     const bareIp = args.ipAddress.split("/")[0];
@@ -98,14 +111,16 @@ export function deployNixOsVm(hostName: string, pxeHostName: string, args: VmArg
         ? pulumi.secret(getSecret(args.hostKeySecretId))
         : pulumi.output("");
 
-    const install = new command.local.Command(`${hostName}-nixos-anywhere`, {
-        dir: "nix",
-        triggers: ["static-ip-v4"],
-        environment: { NIXOS_ANYWHERE_SSH_KEY: sshPrivateKey, NIXOS_HOST_KEY: sshHostKey },
-        // Without an explicit update script, pulumi-command re-runs `create` on
-        // ANY input change — i.e. it REINSTALLS the machine. Do not change this line or you will have a bad time
-        update: "true",
-        create: pulumi.interpolate`
+    const install = new command.local.Command(
+        `${hostName}-nixos-anywhere`,
+        {
+            dir: "nix",
+            triggers: ["static-ip-v4"],
+            environment: { NIXOS_ANYWHERE_SSH_KEY: sshPrivateKey, NIXOS_HOST_KEY: sshHostKey },
+            // Without an explicit update script, pulumi-command re-runs `create` on
+            // ANY input change — i.e. it REINSTALLS the machine. Do not change this line or you will have a bad time
+            update: "true",
+            create: pulumi.interpolate`
     set -eu
     keyfile=$(mktemp)
     extradir=$(mktemp -d)
@@ -131,8 +146,10 @@ export function deployNixOsVm(hostName: string, pxeHostName: string, args: VmArg
       -i "$keyfile" \
       $extra_files_flag \
       root@${bareIp}
-  `,
-    }, { dependsOn: [vm], customTimeouts: { create: "30m" } });
+  `
+        },
+        { dependsOn: [vm], customTimeouts: { create: "30m" } }
+    );
 
     return { vm, install };
 }

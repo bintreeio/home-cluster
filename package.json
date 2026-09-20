@@ -1,0 +1,11 @@
+{
+    "name": "home-cluster",
+    "private": true,
+    "scripts": {
+        "format": "prettier --write \"{pulumi,ansible,docker}/**/*.{ts,js,json,yml,yaml,md}\"",
+        "format:check": "prettier --check \"{pulumi,ansible,docker}/**/*.{ts,js,json,yml,yaml,md}\""
+    },
+    "devDependencies": {
+        "prettier": "^3.6.2"
+    }
+}

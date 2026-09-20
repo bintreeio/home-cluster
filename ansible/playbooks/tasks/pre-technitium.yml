@@ -9,7 +9,7 @@
 - name: Disable the systemd-resolved DNS stub listener (frees :53)
   ansible.builtin.lineinfile:
     path: /etc/systemd/resolved.conf
-    regexp: '^#?DNSStubListener='
+    regexp: "^#?DNSStubListener="
     line: DNSStubListener=no
     insertafter: '^\[Resolve\]'
   when: resolved_state.stdout == "active"

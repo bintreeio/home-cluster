@@ -24,7 +24,3 @@ There are no hand-written env files. The playbooks generate `/docker/<app>/.env`
   `ansible/inventory/host_vars/<host>.yml` (`docker_app_env.<app>`).
 - **Secrets** — `secret-mappings.yml`, mapping env var names to Bitwarden Secrets Manager
   IDs, resolved with `bws` on the machine running Ansible:
-
-
-
-

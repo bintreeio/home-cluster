@@ -6,7 +6,6 @@ services:
     environment:
       DNSWEAVER_SOURCES: proxmox
 
-
       DNSWEAVER_PROXMOX_URL: https://pve01.home.bintree.io
       DNSWEAVER_PROXMOX_TOKEN_ID: dnsweaver@pve!dnsweaver
       DNSWEAVER_PROXMOX_TOKEN_SECRET_FILE: /run/secrets/pve_token
