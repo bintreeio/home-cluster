@@ -1,6 +1,7 @@
 import * as proxmox from "@pulumi/proxmox";
 import { Config } from "@pulumi/pulumi";
 import { provider } from "../../provider";
+import { nasStorage } from "../storageConfig";
 import * as yaml from "yaml";
 interface CloudInitArgs {
     hostname: string;
@@ -38,7 +39,8 @@ export default function debianCloudInit(vmHostName: string, pveHostName: string)
         `${vmHostName}-debian-cloud-init`,
         {
             contentType: "snippets",
-            datastoreId: "local",
+            datastoreId: "nas",
+            // shared storage: upload via one node, readable from all
             nodeName: pveHostName,
             sourceRaw: {
                 fileName: `${vmHostName}-debian-cloud-base.yaml`,
@@ -48,6 +50,8 @@ export default function debianCloudInit(vmHostName: string, pveHostName: string)
                 })
             }
         },
-        { provider }
+        // retainOnDelete: existing VMs keep referencing their original snippet path
+        // (ignoreChanges on userDataFileId), so never delete the file under them.
+        { provider, dependsOn: [nasStorage], retainOnDelete: true }
     );
 }

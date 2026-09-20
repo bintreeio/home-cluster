@@ -3,6 +3,8 @@ import * as ct from "@pulumi/ct";
 import * as proxmox from "@pulumi/proxmox";
 import * as yaml from "js-yaml";
 import { provider } from "../../provider";
+import { nasStorage } from "../storageConfig";
+import { primaryPveNode } from "../../utils/checkpvehosts";
 
 const config = new Config();
 const pubKey = config.require("flatcar_ssh_key");
@@ -54,29 +56,26 @@ function convertButaneToIginition(butaneConfig: string) {
 
 const ignitionFile = convertButaneToIginition(butaneYaml);
 
-const cache = new Map<string, proxmox.VirtualEnvironmentFile>();
+let snippet: proxmox.VirtualEnvironmentFile | undefined;
 
-export function ignitionSnippetBase(nodeName: string): proxmox.VirtualEnvironmentFile {
-    let snippet = cache.get(nodeName);
+/** One shared ignition snippet on the NAS datastore, uploaded once via the primary
+ *  node and usable by VMs on any node. The node argument is accepted for call-site
+ *  compatibility but no longer affects where the file lives. */
+export function ignitionSnippetBase(_nodeName?: string): proxmox.VirtualEnvironmentFile {
     if (!snippet) {
         snippet = new proxmox.VirtualEnvironmentFile(
-            `flatcarBaseIgnition-${nodeName}`,
+            "flatcarBaseIgnition",
             {
-                nodeName: nodeName,
-                datastoreId: "local",
+                nodeName: primaryPveNode,
+                datastoreId: "nas",
                 contentType: "snippets",
                 sourceRaw: {
                     data: ignitionFile.rendered,
                     fileName: "flatcar-base.ign"
                 }
             },
-            {
-                //protect: true,
-                //retainOnDelete: true,
-                provider: provider
-            }
+            { provider, dependsOn: [nasStorage] }
         );
-        cache.set(nodeName, snippet);
     }
     return snippet;
 }

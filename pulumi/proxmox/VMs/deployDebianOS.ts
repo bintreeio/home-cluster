@@ -106,7 +106,12 @@ export function deployDebianVM(
              *  Pulumi won't try to move it back. Set false to have Pulumi
              *  strictly enforce nodeName. */
             ignoreChanges: [
-                ...((args.enforcePlacement ?? true) ? [pveHostName] : []),
+                ...((args.enforcePlacement ?? true) ? ["nodeName"] : []),
+                // Only consumed at first boot. Changing them later (e.g. moving the
+                // image/snippet source from local to the NAS datastore) would force a
+                // VM replacement for no runtime effect.
+                "disks[0].importFrom",
+                "initialization.userDataFileId",
                 ...(args.extraIgnoreChanges ?? [])
             ],
             provider

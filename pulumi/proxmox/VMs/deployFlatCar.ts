@@ -75,7 +75,12 @@ export function deployFlatCarVM(
             /** If true (default), Proxmox HA/migration owns VM placement and
              *  Pulumi won't try to move it back. Set false to have Pulumi
              *  strictly enforce nodeName. */
-            ignoreChanges: (args.extraIgnoreChanges ?? true) ? [pxeHostName] : [],
+            ignoreChanges: [
+                ...((args.extraIgnoreChanges ?? true) ? ["nodeName"] : []),
+                // first-boot only; see deployDebianOS.ts
+                "disks[0].importFrom",
+                "initialization.userDataFileId"
+            ],
             provider: provider
         }
     );

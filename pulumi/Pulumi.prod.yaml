@@ -11,3 +11,7 @@ config:
       ip: 172.16.0.27
   home-cluster:flatcar_ssh_key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHtoZmEkD27Z7kPF7t9dwS510l2G8dzrX5bMW2CBmMCe josh@bintree.io
   home-cluster:vmusersshkey: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHpzIzBfQvoe9PFaqbodcWpGd6VWoEM+GC/Pf/T11xaR josh@bintree.io
+  home-cluster:nas-server:
+    secure: v1:Nsq0vOW+2cB881UC:EktlqHrhqrChVNSklEtIcdxddLxw9DXix2vO
+  home-cluster:nas-export:
+    secure: v1:Ity59vmVmLBNhUrq:HkPx13YYKd6dpZbpz3dVZV6Wast/hQWWy/JOSoo+hXOfCXIG6w==

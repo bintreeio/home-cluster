@@ -1,1 +1,6 @@
 encryptionsalt: v1:AvC1TKjOn0s=:v1:p5ICxpcxZOspidx+:AyhFU4zLUrBcQmkvrWs0BGkBxzD62A==
+config:
+  home-cluster:nas-server:
+    secure: v1:etsDOdwa0/jhdlpV:FP9RvHjSjb2Qq/hBDztJMBJhEi6v9CzWvukj
+  home-cluster:nas-export:
+    secure: v1:UHr3rB/ZsbL8mFJD:nCM7u9OCWShCnJ97fwPaH9Kd4E+xOS7suVA06FBjlqYXo8PYlQ==

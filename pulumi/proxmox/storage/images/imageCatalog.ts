@@ -1,6 +1,7 @@
 import * as proxmox from "@pulumi/proxmox";
 import { provider } from "../../provider";
-import { localStorage } from "../storageConfig";
+import { nasStorage } from "../storageConfig";
+import { primaryPveNode } from "../../utils/checkpvehosts";
 
 interface ImageDef {
     url: string;
@@ -24,26 +25,28 @@ const imageCatalog = {
 
 export type ImageName = keyof typeof imageCatalog; // "flatcar" | "talos | debian"
 
-const cache = new Map<string, proxmox.DownloadFile>();
+const cache = new Map<ImageName, proxmox.DownloadFile>();
 
-export function osImage(image: ImageName, nodeName: string): proxmox.DownloadFile {
-    const key = `${image}/${nodeName}`;
-    let img = cache.get(key);
+/** Download an image once onto the shared NAS datastore. The node argument is
+ *  accepted for call-site compatibility; the download always goes through the
+ *  primary node and the result is visible from every node. */
+export function osImage(image: ImageName, _nodeName?: string): proxmox.DownloadFile {
+    let img = cache.get(image);
     if (!img) {
         const def = imageCatalog[image];
         img = new proxmox.DownloadFile(
-            `${image}-image-${nodeName}`,
+            `${image}-image`,
             {
                 contentType: "import",
-                datastoreId: "local",
-                nodeName: nodeName,
+                datastoreId: "nas",
+                nodeName: primaryPveNode,
                 url: def.url,
                 fileName: def.fileName,
                 overwrite: false
             },
-            { provider, dependsOn: [localStorage], protect: false }
+            { provider, dependsOn: [nasStorage], protect: false }
         );
-        cache.set(key, img);
+        cache.set(image, img);
     }
     return img;
 }
