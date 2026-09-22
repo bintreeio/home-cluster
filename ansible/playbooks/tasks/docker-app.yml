@@ -4,8 +4,17 @@
 #   folder               app folder name under docker/ (e.g. technitium, caddy)
 #   app_dir              directory on the host holding compose.yml
 #   secrets_mapping_file path on the control machine to docker/secret-mappings.yml
+#   docker_apps          (inventory) list of app folders assigned to this host
 #   docker_app_env       (inventory) dict of per-app non-secret env vars
 #   docker_root          (inventory) base dir for appdata bind mounts
+
+- name: Refuse apps that are not assigned to this host
+  ansible.builtin.assert:
+    that: folder in (docker_apps | default([]))
+    fail_msg: >-
+      {{ folder }} is not in docker_apps for {{ inventory_hostname }}
+      (inventory/host_vars/{{ inventory_hostname }}.yml). Add it there if it belongs on this host.
+    quiet: true
 
 - name: Read secret mapping from the control machine
   ansible.builtin.set_fact:

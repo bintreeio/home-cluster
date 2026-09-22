@@ -1,37 +1,43 @@
+# dnsweaver: creates <vm>.home.bintree.io A records in Technitium for every running
+# Proxmox guest, and removes them when the guest goes away. Deployed to network01 by
+# ansible/playbooks/deploy-docker-app-local.yml (-e target_host=network01 -e folder=dnsweaver).
+
 services:
   dnsweaver:
-    image: ghcr.io/maxfield-allison/dnsweaver:latest
+    image: ghcr.io/maxfield-allison/dnsweaver:v3.0.0@sha256:b60b3ab0dc9e486de54d2022cccc888d8847ac54a41559ed03b515aa98f85865
     container_name: dnsweaver
     restart: unless-stopped
+    ports:
+      - "8080:8080"
     environment:
+      DNSWEAVER_PLATFORM: none
       DNSWEAVER_SOURCES: proxmox
+      DNSWEAVER_LOG_LEVEL: ${DNSWEAVER_LOG_LEVEL}
+      DNSWEAVER_LOG_FORMAT: text
 
-      DNSWEAVER_PROXMOX_URL: https://pve01.home.bintree.io
-      DNSWEAVER_PROXMOX_TOKEN_ID: dnsweaver@pve!dnsweaver
-      DNSWEAVER_PROXMOX_TOKEN_SECRET_FILE: /run/secrets/pve_token
+      DNSWEAVER_PROXMOX_URL: ${PVE_URL}
+      DNSWEAVER_PROXMOX_TOKEN_ID: ${PVE_TOKEN_ID}
+      DNSWEAVER_PROXMOX_TOKEN_SECRET: ${PVE_TOKEN_SECRET}
+
       DNSWEAVER_PROXMOX_TLS_SKIP_VERIFY: "true"
-      DNSWEAVER_PROXMOX_DOMAIN_SUFFIX: home.bintree.io
 
-      # --- Providers (both are the same Technitium server) ---
-      DNSWEAVER_INSTANCES: apps,pve
+      DNSWEAVER_PROXMOX_DOMAIN_SUFFIX: ${DNS_ZONE}
 
-      # Proxmox guests -> A record to their own IP (source supplies the IP)
-      DNSWEAVER_PVE_TYPE: technitium
-      DNSWEAVER_PVE_URL: http://10.0.0.5:5380
-      DNSWEAVER_PVE_TOKEN_FILE: /run/secrets/technitium_token
-      DNSWEAVER_PVE_ZONE: home.example.com
-      DNSWEAVER_PVE_RECORD_TYPE: A
-      DNSWEAVER_PVE_DOMAINS: "*.pve.home.example.com"
+      DNSWEAVER_PROXMOX_TARGET_MODE: guest-ip
+      DNSWEAVER_PROXMOX_STATE_FILTER: running
 
-      DNSWEAVER_LOG_LEVEL: info
-    volumes:
-      - /docker/appdata/dnsweaver/docker.sock:/var/run/docker.sock:ro
-    secrets:
-      - technitium_token
-      - pve_token
-
-secrets:
-  technitium_token:
-    file: ./secrets/technitium_token
-  pve_token:
-    file: ./secrets/pve_token
+      DNSWEAVER_INSTANCES: technitium
+      DNSWEAVER_TECHNITIUM_TYPE: technitium
+      DNSWEAVER_TECHNITIUM_URL: ${TECHNITIUM_URL}
+      DNSWEAVER_TECHNITIUM_TOKEN: ${TECHNITIUM_API_TOKEN}
+      DNSWEAVER_TECHNITIUM_ZONE: ${DNS_ZONE}
+      DNSWEAVER_TECHNITIUM_RECORD_TYPE: A
+      DNSWEAVER_TECHNITIUM_TARGET: ${FALLBACK_TARGET}
+      DNSWEAVER_TECHNITIUM_DOMAINS: "*.${DNS_ZONE}"
+      # managed: create/delete only records dnsweaver owns; never touch unknown ones.
+      DNSWEAVER_TECHNITIUM_MODE: managed
+      # VMs are not HTTPS services; don't publish HTTPS/
+      DNSWEAVER_TECHNITIUM_AUTO_HTTPS_RECORDS: "false"
+      DNSWEAVER_HEALTH_ADDRESS: 0.0.0.0
+      DNSWEAVER_HEALTH_ALLOW_NETWORK: "true"
+#logging can be handled by endpoints /health /ready /metrics on localhost within docker container

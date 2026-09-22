@@ -1,5 +1,12 @@
-# network01 (pve01) — primary DNS + Caddy reverse proxy. Mirrors nix/hosts/network01.nix.
-# Per-app env written to /docker/<app>/.env by the deploy playbooks (non-secret values only).
+# network01 (pve01) — primary DNS + Caddy reverse proxy + dnsweaver.
+
+# Docker apps that belong on this host. The deploy playbooks refuse any other folder,
+# and deploy-docker-apps.yml deploys exactly this list (source of truth for CI).
+docker_apps:
+  - technitium
+  - caddy
+  - dnsweaver
+
 docker_app_env:
   technitium:
     DNS_SERVER_DOMAIN: dns01.home.bintree.io
@@ -7,3 +14,12 @@ docker_app_env:
   caddy:
     WILDCARD_DOMAIN: "{{ wildcard_domain }}"
     DNS_HOSTNAME: dns01.home.bintree.io
+  dnsweaver:
+    # PVE node IP, not the Caddy hostname: dnsweaver must not depend on the DNS it manages.
+    PVE_URL: https://172.16.0.25:8006
+    DNS_ZONE: home.bintree.io
+    TECHNITIUM_URL: http://172.16.32.11:5380
+    # Fallback record target when a guest supplies no IP (normally never used): Caddy.
+    FALLBACK_TARGET: 172.16.32.11
+    # Set to debug (and DNSWEAVER_DRY_RUN: "true" in compose) for a first look at what it would do.
+    DNSWEAVER_LOG_LEVEL: info

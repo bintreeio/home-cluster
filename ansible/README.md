@@ -28,6 +28,15 @@ ansible-playbook playbooks/deploy-docker-app.yml \
   -i inventory/hosts.yml -e target_host=network02 -e folder=technitium
 ```
 
+All apps assigned to a host at once (what CI should call; the list comes from
+`docker_apps` in `inventory/host_vars/<host>.yml`, so the pipeline never names apps):
+
+```sh
+ansible-playbook playbooks/deploy-docker-apps.yml -i inventory/hosts.yml -e target_host=network01
+```
+
+`docker_apps` is also a guard: the single-app playbooks refuse a folder the host does not list.
+
 Both share `playbooks/tasks/docker-app.yml`: resolve `docker/secret-mappings.yml` through
 `bws`, merge with `docker_app_env.<folder>` from `inventory/host_vars`, write
 `/docker/<app>/.env`, create `/docker/appdata/<app>/logs`, `docker compose up`.

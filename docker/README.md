@@ -23,4 +23,7 @@ There are no hand-written env files. The playbooks generate `/docker/<app>/.env`
 - **Plain config** — `ansible/inventory/group_vars/all.yml` and
   `ansible/inventory/host_vars/<host>.yml` (`docker_app_env.<app>`).
 - **Secrets** — `secret-mappings.yml`, mapping env var names to Bitwarden Secrets Manager
-  IDs, resolved with `bws` on the machine running Ansible:
+  IDs, resolved with `bws` on the machine running Ansible.
+- **Which apps go where** — `docker_apps` in `ansible/inventory/host_vars/<host>.yml`.
+  The playbooks refuse an app the host does not list; `deploy-docker-apps.yml` deploys
+  the whole list, so CI only has to name the host.
